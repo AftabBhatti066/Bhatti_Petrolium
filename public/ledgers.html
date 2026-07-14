@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhatti Petroleum - Ledgers</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #d6dbdf;
+            padding: 5px;
+            font-size: 13px;
+            color: #000;
+        }
+
+        .window-title {
+            background: linear-gradient(to bottom, #7fb3d5, #2980b9);
+            color: #fff;
+            padding: 3px 8px;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #1f618d;
+        }
+
+        .menu-bar {
+            background-color: #f2f4f4;
+            padding: 2px 8px;
+            border-bottom: 1px solid #bdc3c7;
+            font-size: 12px;
+        }
+
+        .menu-bar span {
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .tabs-container {
+            background-color: #e5e8e8;
+            padding: 5px 5px 0 5px;
+            border-bottom: 1px solid #bdc3c7;
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            padding: 4px 10px;
+            background-color: #f2f4f4;
+            border: 1px solid #bdc3c7;
+            border-bottom: none;
+            border-radius: 3px 3px 0 0;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .tab-btn.active {
+            background-color: #ffffff;
+            font-weight: bold;
+            border-top: 3px solid #c0392b;
+            height: 22px;
+            position: relative;
+            top: 1px;
+            z-index: 10;
+        }
+
+        .meta-header {
+            background-color: #ffffff;
+            padding: 6px 10px;
+            border-bottom: 1px solid #bdc3c7;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .meta-header input[type="date"] {
+            padding: 2px 4px;
+            border: 1px solid #a6acaf;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        .step-box {
+            background-color: #d4e6f1;
+            color: #1b4f72;
+            padding: 6px 10px;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #a6acaf;
+            margin-top: 5px;
+        }
+
+        .form-panel {
+            background-color: #eaecee;
+            padding: 8px 10px;
+            border: 1px solid #a6acaf;
+            border-top: none;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            color: #1b4f72;
+            font-size: 11px;
+        }
+
+        .input-group input,
+        .input-group select {
+            padding: 4px 6px;
+            border: 1px solid #bdc3c7;
+            font-size: 12px;
+            height: 26px;
+        }
+
+        .btn {
+            padding: 4px 12px;
+            font-weight: bold;
+            font-size: 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 1px solid #7f8c8d;
+        }
+
+        .btn-register {
+            background-color: #7986cb;
+            color: white;
+            border-color: #3f51b5;
+        }
+
+        .btn-reset {
+            background-color: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+            padding: 2px 6px;
+        }
+
+        .btn-log-fuel {
+            background-color: #d6eaf8;
+            color: #1b4f72;
+            border-color: #aed6f1;
+        }
+
+        .sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            background-color: #ffffff;
+            border: 1px solid #a6acaf;
+        }
+
+        .sheet-table th,
+        .sheet-table td {
+            border: 1px solid #bdc3c7;
+            padding: 6px 10px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .sheet-table th {
+            background-color: #b0c4de;
+            color: #1b4f72;
+            font-weight: bold;
+        }
+
+        .btn-delete {
+            color: #c0392b;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .summary-bar {
+            background-color: #fef9e7;
+            border: 1px solid #f9e79f;
+            padding: 8px 12px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 13px;
+        } */
+    </style>
+</head>
+
+<body>
+
+    
+ <div class="window-title">
+        <span>⛽ Bhatti Petroleum, BHOBRA - Integrated Dashboard</span>
+        <!-- <span>Version 2.0</span> -->
+    </div>
+
+
+<div class="tabs-container">
+    <a href="dashboard.html" class="tab-btn">📊 Dashboard</a>
+    <a href="meter-reading.html" class="tab-btn">⛽ Meter Reading</a>
+    <a href="daily-sheet.html" class="tab-btn">📝 Daily Sheet</a>
+    <a href="ledgers.html" class="tab-btn">📒 Ledgers</a>
+    <a href="pricing.html" class="tab-btn active">📊 Pricing</a>
+    <a href="reports.html" class="tab-btn">📁 Reports</a>
+</div>
+
+    <!-- <div class="meta-header">
+        <strong>Date:</strong> <input type="date" id="systemDate" value="2026-06-23"><br>
+    </div> -->
+
+    <form id="vehicleRegForm">
+        <div class="step-box">
+            <span>📌 Step 1: New Vehicle Registration (Gari Ka Khata Kholna)</span>
+            <button type="button" class="btn btn-reset"
+                onclick="document.getElementById('vehicleRegForm').reset()">Reset Memory</button>
+        </div>
+
+        <div class="form-panel">
+            <div class="input-group">
+                <label>🚛 Gari Number:</label>
+                <input type="text" id="reg_gari_number" placeholder="E.G. SGA-4592" required>
+            </div>
+            <div class="input-group">
+                <label>👤 Owner / Driver Name:</label>
+                <input type="text" id="reg_owner_name" placeholder="e.g. Mubashar Hassan" required>
+            </div>
+            <div class="input-group">
+                <label>📞 Contact Number:</label>
+                <input type="text" id="reg_contact_number" placeholder="e.g. 0300-1234567" required>
+            </div>
+            <div class="input-group">
+                <label>🏠 Address / Route:</label>
+                <input type="text" id="reg_address" placeholder="e.g. Bhobra, Sargodha" required>
+            </div>
+            <div class="input-group" style="align-self: flex-end;">
+                <button type="submit" class="btn btn-register">💾 Register Gari</button>
+            </div>
+        </div>
+    </form>
+    <form id="logFuelForm">
+        <div class="step-box" style="margin-top: 8px;">
+            <span>⛽ Step 2: Daily Credit Fuel Entry & Search Ledger</span>
+        </div>
+
+        <div class="form-panel">
+            <div class="input-group">
+                <label>🔍 Search / Select Gari:</label>
+                <input type="text" id="search_gari" placeholder="Type Gari No..." autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>📅 Date:</label>
+                <input type="date" id="entry_date" required>
+            </div>
+            <div class="input-group">
+                <label>🚚 Driver Name:</label>
+                <input type="text" id="driver_name" placeholder="Driver Name" required>
+            </div>
+            <div class="input-group">
+    <label>⛽ Select Product:</label>
+    <select id="product_type" required>
+        <optgroup label="⛽ Fuel Types">
+            <option value="Diesel (HSD)">Diesel (HSD)</option>
+            <option value="Petrol (Super)">Petrol (Super)</option>
+        </optgroup>
+
+        <optgroup label="🛢️ Mobil Oil Products">
+            <option value="T 2 20Ltrs">T 2 20Ltrs</option>
+            <option value="Balize .75">Balize .75</option>
+            <option value="Balize 1Ltrs">Balize 1Ltrs</option>
+            <option value="Cariant 3Ltrs">Cariant 3Ltrs</option>
+            <option value="Cariant 4ltrs">Cariant 4ltrs</option>
+            <option value="Deo 6000 4Ltrs">Deo 6000 4Ltrs</option>
+            <option value="Deo 6000 10Ltrs">Deo 6000 10Ltrs</option>
+            <option value="Deo 8000 4Ltrs">Deo 8000 4Ltrs</option>
+            <option value="Deo 8000 10Ltrs">Deo 8000 10Ltrs</option>
+        </optgroup>
+    </select>
+</div>
+            <div class="input-group">
+                <label>🛢️ Litres:</label>
+                <input type="number" id="litres" step="0.01" placeholder="100" required>
+            </div>
+            <div class="input-group" style="align-self: flex-end;">
+                <button type="submit" class="btn btn-log-fuel">➕ Log Fuel</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="sheet-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Vehicle Number</th>
+                <th>Owner / Driver Name</th>
+                <th>Contact Info</th>
+                <th>Address</th>
+                <th>Product</th>
+                <th>Litres</th>
+                <th>Rate (PKR)</th>
+                <th>Total Amount</th>
+                <th>Del</th>
+            </tr>
+        </thead>
+        <tbody id="ledgerTableBody">
+            <tr>
+                <td colspan="10" style="color: #7f8c8d;">Data loading...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="summary-bar">
+        <div>Total Logged Fuel: <span id="totalLoggedFuel" style="color:#1f618d;">0 Ltr</span></div>
+        <div>Total Credit Amount: <span id="totalCreditAmount" style="color:#c0392b;">0 PKR</span></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api/ledger';
+
+        // DOM Load hone ke BAAD saare events attach karein
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Set Default Date to Today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('entry_date').value = today;
+
+            // Load All Ledgers Initially
+            fetchLedgerHistory('ALL');
+
+            // 1. Live Search Input Event
+            const searchInput = document.getElementById('search_gari');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                fetchLedgerHistory(query === '' ? 'ALL' : query);
+            });
+
+            // 2. Register Vehicle Form Handler
+            document.getElementById('vehicleRegForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const gariNo = document.getElementById('reg_gari_number').value.trim();
+                const ownerName = document.getElementById('reg_owner_name').value.trim();
+
+                const payload = {
+                    gari_number: gariNo,
+                    owner_name: ownerName,
+                    contact_number: document.getElementById('reg_contact_number').value,
+                    address: document.getElementById('reg_address').value
+                };
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert(data.message || 'Gari Register ho gayi hai!');
+
+                        // Auto Shift Values to Step 2
+                        document.getElementById('search_gari').value = gariNo;
+                        document.getElementById('driver_name').value = ownerName;
+
+                        // Auto Refresh Table for this vehicle
+                        fetchLedgerHistory(gariNo);
+
+                        // Clear Step 1 Form & Focus Litres
+                        document.getElementById('vehicleRegForm').reset();
+                        document.getElementById('litres').focus();
+                    } else {
+                        alert('Error: ' + (data.message || data.db_error));
+                    }
+                } catch (err) {
+                    alert('Server Connection Error: ' + err.message);
+                }
+            });
+
+            // 3. Log Fuel Form Handler
+            document.getElementById('logFuelForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const gariNo = document.getElementById('search_gari').value.trim();
+
+                if (!gariNo) {
+                    alert('Pehle Gari Number add ya select karein!');
+                    return;
+                }
+
+                const payload = {
+                    gari_number: gariNo,
+                    driver_name: document.getElementById('driver_name').value,
+                    product: document.getElementById('product_type').value,
+                    litres: parseFloat(document.getElementById('litres').value),
+                    entry_date: document.getElementById('entry_date').value
+                };
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/log-fuel`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.status === "Success") {
+                        document.getElementById('litres').value = '';
+                        // Entry save hone par saari list dikhao
+                        fetchLedgerHistory('ALL');
+                        document.getElementById('search_gari').value = '';
+                        document.getElementById('driver_name').value = '';
+                    } else {
+                        alert('Error: ' + (data.message || 'Fuel entry save nahi ho saki. Check rates!'));
+                    }
+                } catch (err) {
+                    alert('Server Connection Error: ' + err.message);
+                }
+            });
+        });
+
+        // Fetch Function (Global scope so delete can access it)
+        async function fetchLedgerHistory(gariQuery = 'ALL') {
+            try {
+                const response = await fetch(`${API_BASE_URL}/report/${encodeURIComponent(gariQuery)}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    renderLedgerTable(data.history || []);
+                    document.getElementById('totalLoggedFuel').innerText = `${data.total_logged_fuel || 0} Ltr`;
+                    document.getElementById('totalCreditAmount').innerText = `${(data.total_credit_amount || 0).toLocaleString()} PKR`;
+                } else {
+                    document.getElementById('ledgerTableBody').innerHTML = `<tr><td colspan="10" style="color:red;">${data.message || 'Data fetch nahi ho saka'}</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Fetch Error:", err);
+            }
+        }
+
+        // Render Table Rows
+        function renderLedgerTable(history) {
+            const tbody = document.getElementById('ledgerTableBody');
+            tbody.innerHTML = '';
+
+            if (!history || history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="color:#7f8c8d;">Koi credit entry majood nahi hai.</td></tr>';
+                return;
+            }
+
+            history.forEach(row => {
+                const formattedDate = new Date(row.entry_date).toLocaleDateString('en-GB');
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td><strong>${row.gari_number}</strong></td>
+                    <td>${row.driver_name || '-'}</td>
+                    <td>${row.contact_info || row.contact_number || '-'}</td>
+                    <td>${row.address || '-'}</td>
+                    <td>${row.product}</td>
+                    <td>${row.litres}</td>
+                    <td>${parseFloat(row.rate_pkr || 0).toFixed(2)}</td>
+                    <td style="color:#c0392b; font-weight:bold;">${parseFloat(row.total_amount || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 })}</td>
+                    <td><a href="javascript:void(0)" class="btn-delete" onclick="deleteEntry(${row.id})">[X]</a></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Delete Row
+        async function deleteEntry(id) {
+            if (!confirm('Kya aap yeh entry delete karna chahte hain?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/delete/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+
+                if (response.ok) {
+                    fetchLedgerHistory('ALL');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Server Error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhatti Petroleum, BHOBRA - [Daily Management Dashboard]</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #d6dbdf;
+            padding: 5px;
+            font-size: 13px;
+            color: #000000;
+        }
+
+        .window-title {
+            background: linear-gradient(to bottom, #7fb3d5, #2980b9);
+            color: #ffffff;
+            padding: 3px 8px;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #1f618d;
+        }
+
+        .menu-bar {
+            background-color: #f2f4f4;
+            padding: 2px 8px;
+            border-bottom: 1px solid #bdc3c7;
+            font-size: 12px;
+        }
+
+        .menu-bar span {
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .tabs-container {
+            background-color: #e5e8e8;
+            padding: 5px 5px 0 5px;
+            border-bottom: 1px solid #bdc3c7;
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            padding: 4px 10px;
+            background-color: #f2f4f4;
+            border: 1px solid #bdc3c7;
+            border-bottom: none;
+            border-radius: 3px 3px 0 0;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .tab-btn.active {
+            background-color: #ffffff;
+            font-weight: bold;
+            border-top: 3px solid #c0392b;
+            height: 22px;
+            position: relative;
+            top: 1px;
+            z-index: 10;
+        }
+
+        .meta-header {
+            background-color: #ffffff;
+            padding: 6px 10px;
+            border-bottom: 1px solid #bdc3c7;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .meta-header input[type="date"] {
+            padding: 2px 4px;
+            border: 1px solid #a6acaf;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        .section-header-box {
+            background-color: #d4e6f1;
+            color: #1b4f72;
+            padding: 6px 10px;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid #a6acaf;
+            margin-top: 5px;
+        }
+
+        .control-panel {
+            background-color: #eaecee;
+            padding: 8px 10px;
+            border: 1px solid #a6acaf;
+            border-top: none;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+            color: #1b4f72;
+        }
+
+        .filter-input {
+            background-color: #fef9e7;
+            border: 1px solid #d4ac0d;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 13px;
+            width: 170px;
+        }
+
+        .add-cust-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-left: 2px solid #bdc3c7;
+            padding-left: 15px;
+        }
+
+        .add-cust-group input {
+            padding: 4px 6px;
+            border: 1px solid #bdc3c7;
+            font-size: 12px;
+        }
+
+        .btn-add {
+            background-color: #f2f4f4;
+            border: 1px solid #7f8c8d;
+            padding: 4px 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .btn-add:hover {
+            background-color: #e5e8e8;
+        }
+
+        .btn-save-sheet {
+            background-color: #27ae60;
+            color: white;
+            border: 1px solid #1e8449;
+            padding: 6px 16px;
+            font-weight: bold;
+            font-size: 13px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-save-sheet:hover {
+            background-color: #219653;
+        }
+
+        .sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            background-color: #ffffff;
+            border: 1px solid #a6acaf;
+        }
+
+        .sheet-table th,
+        .sheet-table td {
+            border: 1px solid #bdc3c7;
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        .sheet-table th {
+            background-color: #b0c4de;
+            color: #1b4f72;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .sheet-input {
+            width: 100%;
+            border: 1px solid #bdc3c7;
+            padding: 4px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        .sheet-input:focus {
+            outline: 1px solid #2980b9;
+            background-color: #fdfefe;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-bold {
+            font-weight: bold;
+        }
+
+        .btn-delete {
+            color: #c0392b;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .summary-bar {
+            background-color: #fef9e7;
+            border: 1px solid #f9e79f;
+            padding: 10px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .net-income {
+            color: #0e6251;
+            font-size: 15px;
+        } */
+    </style>
+</head>
+
+<body>
+
+     <div class="window-title">
+        <span>⛽ Bhatti Petroleum, BHOBRA - Integrated Dashboard</span>
+        <!-- <span>Version 2.0</span> -->
+    </div>
+
+   
+
+    <div class="tabs-container">
+        <a href="dashboard.html" class="tab-btn">📊 Dashboard</a>
+        <a href="meter-reading.html" class="tab-btn">⛽ Meter Reading</a>
+        <a href="daily-sheet.html" class="tab-btn active">📝 Daily Sheet</a>
+        <a href="ledgers.html" class="tab-btn">📒 Ledgers</a>
+        <a href="pricing.html" class="tab-btn">📊 Pricing</a>
+        <a href="reports.html" class="tab-btn">📁 Reports</a>
+    </div>
+
+    <div class="meta-header">
+        <div><strong>Date:</strong> <input type="date" id="working_date" onchange="loadSheetByDate()"></div>
+       
+    </div>
+
+    <div class="section-header-box">
+        <span>Daily Sheet (Customer Accounts & Memory Lock)</span>
+        <span style="font-weight: normal; font-size: 12px;">Status: Realtime Dynamic Triggers Fixed</span>
+    </div>
+
+    <div class="control-panel">
+        <div class="filter-group">
+            <span>🔍 Filter ID:</span>
+            <input type="text" id="filter_id" class="filter-input" placeholder="e.g. mh" oninput="filterTable()">
+        </div>
+
+        <div class="add-cust-group">
+            <span style="color: #6c3483; font-weight: bold;">+ New Cust:</span>
+            <input type="text" id="new_cust_name" placeholder="Name" style="width: 180px;">
+            <input type="text" id="new_cust_id" placeholder="ID (e.g. m)" style="width: 80px;">
+            <button class="btn-add" onclick="addNewCustomer()">Add</button>
+        </div>
+
+        <button class="btn-save-sheet" onclick="saveAllSheetEntries()">💾 Save Daily Sheet</button>
+    </div>
+
+    <table class="sheet-table">
+        <thead>
+            <tr>
+                <th style="width: 32%;">Customer Name</th>
+                <th style="width: 15%;">Search ID</th>
+                <th style="width: 18%;">Debit (Udhaar)</th>
+                <th style="width: 18%;">Credit (Vasooli)</th>
+                <th style="width: 10%;">Total</th>
+                <th style="width: 7%;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="sheetTableBody">
+        </tbody>
+    </table>
+
+    <div class="summary-bar">
+        <div>
+            <span>Total Debit: <span id="lbl_total_debit" style="color: #c0392b;">0</span></span>
+            <span style="margin-left: 25px;">Total Credit: <span id="lbl_total_credit"
+                    style="color: #1f618d;">0</span></span>
+        </div>
+        <div class="net-income">
+            Net Cash Income: <span id="lbl_net_income">0</span> PKR
+        </div>
+    </div>
+
+    <script>
+    const API_URL = '/api/daily-sheet';
+
+    function getTodayDateString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    async function loadSheetByDate() {
+        const dateInput = document.getElementById('working_date');
+        if (!dateInput || !dateInput.value) return;
+
+        const currentDate = dateInput.value;
+
+        try {
+            const response = await fetch(`${API_URL}/view/${currentDate}`);
+            const result = await response.json();
+
+            if (result.status === "Success") {
+                renderTableRows(result.entries);
+            }
+        } catch (err) {
+            console.error("Connection error:", err);
+        }
+    }
+
+    function renderTableRows(entries) {
+        const tbody = document.getElementById('sheetTableBody');
+        tbody.innerHTML = "";
+
+        if (!entries || entries.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 15px; color: #7f8c8d;">Pehle <b>+ New Cust</b> section se customers add karein.</td></tr>`;
+            recalculateTotals();
+            return;
+        }
+
+        entries.forEach((row) => {
+            const tr = document.createElement('tr');
+            tr.setAttribute('data-search-id', row.search_id.toLowerCase());
+            tr.setAttribute('data-db-id', row.id);
+
+            const debitVal = parseFloat(row.debit_udhaar) || 0;
+            const creditVal = parseFloat(row.credit_vasooli) || 0;
+            const totalVal = debitVal - creditVal;
+
+            tr.innerHTML = `
+                <td class="text-bold cust-name-cell">${row.customer_name}</td>
+                <td class="text-center text-bold search-id-cell">${row.search_id}</td>
+                <td><input type="number" class="sheet-input input-debit" value="${debitVal}" oninput="recalculateTotals()"></td>
+                <td><input type="number" class="sheet-input input-credit" value="${creditVal}" oninput="recalculateTotals()"></td>
+                <td class="text-right text-bold row-total">${totalVal}</td>
+                <td class="text-center"><span class="btn-delete" onclick="deleteEntry(event, ${row.id}, '${row.search_id}')">[X]</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        recalculateTotals();
+    }
+
+    function recalculateTotals() {
+        let grandDebit = 0;
+        let grandCredit = 0;
+
+        const tbody = document.getElementById('sheetTableBody');
+        const rows = tbody.querySelectorAll('tr');
+
+        rows.forEach(tr => {
+            const debitInput = tr.querySelector('.input-debit');
+            const creditInput = tr.querySelector('.input-credit');
+            const totalCell = tr.querySelector('.row-total');
+
+            if (debitInput && creditInput) {
+                const debit = parseFloat(debitInput.value) || 0;
+                const credit = parseFloat(creditInput.value) || 0;
+
+                const rowTotal = debit - credit;
+                totalCell.textContent = rowTotal;
+
+                grandDebit += debit;
+                grandCredit += credit;
+            }
+        });
+
+        document.getElementById('lbl_total_debit').textContent = grandDebit.toLocaleString();
+        document.getElementById('lbl_total_credit').textContent = grandCredit.toLocaleString();
+        document.getElementById('lbl_net_income').textContent = grandCredit.toLocaleString();
+    }
+
+    function filterTable() {
+        const query = document.getElementById('filter_id').value.trim().toLowerCase();
+        const tbody = document.getElementById('sheetTableBody');
+        const rows = tbody.querySelectorAll('tr');
+
+        rows.forEach(tr => {
+            const searchId = tr.getAttribute('data-search-id');
+            if (searchId && searchId.includes(query)) {
+                tr.style.display = '';
+            } else if (searchId) {
+                tr.style.display = 'none';
+            }
+        });
+    }
+
+    async function addNewCustomer() {
+        const name = document.getElementById('new_cust_name').value.trim();
+        const searchId = document.getElementById('new_cust_id').value.trim();
+
+        if (!name || !searchId) {
+            alert("Customer Name aur Search ID dono zaroori hain!");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/customer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customer_name: name, search_id: searchId })
+            });
+
+            const result = await res.json();
+            if (result.status === "Success") {
+                document.getElementById('new_cust_name').value = "";
+                document.getElementById('new_cust_id').value = "";
+                await loadSheetByDate();
+            } else {
+                alert("Error: " + (result.message || result.db_error));
+            }
+        } catch (err) {
+            console.error("Customer add error:", err);
+        }
+    }
+
+    // Single Batch Payload Save (No duplicates)
+    async function saveAllSheetEntries() {
+        const currentDate = document.getElementById('working_date').value;
+        const tbody = document.getElementById('sheetTableBody');
+        const rows = tbody.querySelectorAll('tr');
+
+        if (rows.length === 0) return;
+
+        const entries = [];
+
+        rows.forEach(tr => {
+            const custNameCell = tr.querySelector('.cust-name-cell');
+            const searchIdCell = tr.querySelector('.search-id-cell');
+            const debitInput = tr.querySelector('.input-debit');
+            const creditInput = tr.querySelector('.input-credit');
+
+            if (searchIdCell && debitInput && creditInput) {
+                entries.push({
+                    customer_name: custNameCell ? custNameCell.textContent.trim() : '',
+                    search_id: searchIdCell.textContent.trim(),
+                    debit_udhaar: parseFloat(debitInput.value) || 0,
+                    credit_vasooli: parseFloat(creditInput.value) || 0,
+                    sheet_date: currentDate
+                });
+            }
+        });
+
+        try {
+            const res = await fetch(`${API_URL}/save`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ entries: entries, sheet_date: currentDate })
+            });
+
+            const result = await res.json();
+            if (result.status === "Success") {
+                alert("🎉 Data Kamyabi se Save Ho Gaya!");
+                await loadSheetByDate();
+            } else {
+                alert("Error: " + (result.message || result.db_error));
+            }
+        } catch (err) {
+            console.error("Saving error:", err);
+        }
+    }
+
+    async function deleteEntry(event, id, searchId) {
+        if (event) event.stopPropagation();
+
+        const choice = confirm(`Customer (${searchId}) ko delete karna chahte hain?`);
+        if (!choice) return;
+
+        try {
+            const res = await fetch(`${API_URL}/delete-customer/${searchId}`, { method: 'DELETE' });
+            const result = await res.json();
+
+            if (result.status === "Success") {
+                await loadSheetByDate();
+            } else {
+                alert(result.message || result.db_error);
+            }
+        } catch (err) {
+            console.error("Delete error:", err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.getElementById('working_date');
+        if (dateInput) {
+            dateInput.value = getTodayDateString();
+            dateInput.addEventListener('change', loadSheetByDate);
+        }
+        loadSheetByDate();
+    });
+</script>
+</body>
+
+</html>

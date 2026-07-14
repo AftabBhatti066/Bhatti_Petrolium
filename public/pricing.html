@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhatti Petroleum, BHOBRA - [Pricing Management]</title>
+    <link rel="stylesheet" href="style.css">
+   <style>
+        /* 1. Global Reset & Body */
+       
+    </style>
+</head>
+<body>
+
+ <div class="window-title">
+        <span>⛽ Bhatti Petroleum, BHOBRA - Integrated Dashboard</span>
+        <!-- <span>Version 2.0</span> -->
+    </div>
+
+
+<div class="tabs-container">
+    <a href="dashboard.html" class="tab-btn">📊 Dashboard</a>
+    <a href="meter-reading.html" class="tab-btn">⛽ Meter Reading</a>
+    <a href="daily-sheet.html" class="tab-btn">📝 Daily Sheet</a>
+    <a href="ledgers.html" class="tab-btn">📒 Ledgers</a>
+    <a href="pricing.html" class="tab-btn active">📊 Pricing</a>
+    <a href="reports.html" class="tab-btn">📁 Reports</a>
+</div>
+
+<div class="meta-header">
+    <!-- <div><strong>Date:</strong> <input type="date" id="working_date"></div> -->
+    <!-- <div><strong>User:</strong> Abid Khan</div>
+    <div><strong>Login Time:</strong> 9:20 AM</div> -->
+</div>
+
+<div style="margin-top: 10px;">
+    <div class="section-header-box">
+        <span>⚙️ Fuel & Mobil Oil Pricing Management (Daily Rates Setup)</span>
+        <span id="syncStatus" style="font-weight: normal; font-size: 12px; color: #f9e79f;">Database Live Connection</span>
+    </div>
+
+    <div class="control-panel">
+        <div class="form-group">
+            <label>📅 Rate Active Date:</label>
+            <input type="date" id="rate_active_date" class="filter-input" style="width: 160px;">
+        </div>
+
+        <div class="form-group">
+            <label>⛽ Main Product:</label>
+            <select id="main_product" class="filter-input" style="width: 250px;">
+                <optgroup label="Fuel Types">
+                    <option value="Diesel (HSD)|Diesel|Standard (HSD)">Diesel (HSD)</option>
+                    <option value="Petrol (Super)|Super|Petrol (PMG)">Petrol (Super)</option>
+                </optgroup>
+                <optgroup label="Mobil Oil Products">
+                    <option value="T 2 20Ltrs|Mobil|Mobil Oil 20L">T 2 20Ltrs</option>
+                    <option value="Balize .75|Mobil|Mobil Oil .75L">Balize .75</option>
+                    <option value="Balize 1Ltrs|Mobil|Mobil Oil 1L">Balize 1Ltrs</option>
+                    <option value="Cariant 3Ltrs|Mobil|Mobil Oil 3L">Cariant 3Ltrs</option>
+                    <option value="Cariant 4ltrs|Mobil|Mobil Oil 4L">Cariant 4ltrs</option>
+                    <option value="Deo 6000 4Ltrs|Mobil|Mobil Oil 6000 4L">Deo 6000 4Ltrs</option>
+                    <option value="Deo 6000 10Ltrs|Mobil|Mobil Oil 6000 10L">Deo 6000 10Ltrs</option>
+                    <option value="Deo 8000 4Ltrs|Mobil|Mobil Oil 8000 4L">Deo 8000 4Ltrs</option>
+                    <option value="Deo 8000 10Ltrs|Mobil|Mobil Oil 8000 10L">Deo 8000 10Ltrs</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>💰 Rate per Litre / Pack (PKR):</label>
+            <input type="number" id="rate_per_litre" class="filter-input" placeholder="e.g. 307.10" step="0.01" style="width: 180px;">
+        </div>
+
+        <div>
+            <button class="btn-save-sheet" onclick="submitRateUpdate()">💾 Update Rate</button>
+        </div>
+    </div>
+
+    <div style="margin-top: 10px;">
+        <div style="background-color: #e5e8e8; color: #1b4f72; padding: 6px 10px; font-weight: bold; border: 1px solid #a6acaf; border-bottom: none;">
+            📋 Master Price Log History (Sorted by Date)
+        </div>
+        <table class="sheet-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Date</th>
+                    <th style="width: 20%;">Product Type</th>
+                    <th style="width: 35%;">Specific Category / Grade</th>
+                    <th style="width: 20%;">Active Rate (PKR)</th>
+                    <th style="width: 10%;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="pricingTableBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/fuel';
+
+    function getTodayDateString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    async function loadPriceHistory() {
+        try {
+            const tbody = document.getElementById('pricingTableBody');
+            if (!tbody) {
+                console.warn("DOM Element 'pricingTableBody' abhi tak ready nahi hua.");
+                return;
+            }
+
+            // Fetching rate data from Backend API
+            const res = await fetch(`${API_URL}/rates`);
+            const result = await res.json();
+
+            tbody.innerHTML = '';
+
+            if (result.status === "Success" && result.data && result.data.length > 0) {
+                result.data.forEach(row => {
+                    const formattedDate = new Date(row.rate_date).toLocaleDateString('en-GB');
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-center val-blue text-bold">${formattedDate}</td>
+                        <td class="text-center"><span class="badge-type">${row.product_type}</span></td>
+                        <td class="text-center text-bold">${row.specific_category}</td>
+                        <td class="text-center val-red text-bold">${parseFloat(row.rate_per_litre).toFixed(2)} PKR</td>
+                        <td class="text-center"><span class="btn-delete" onclick="deletePriceLog(${row.id})">[Delete]</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:15px; color:#7f8c8d;">Koi price rate log record majood nahi hai.</td></tr>`;
+            }
+        } catch (err) {
+            console.error("Price history load error:", err);
+        }
+    }
+
+    async function submitRateUpdate() {
+        const rateDate = document.getElementById('rate_active_date').value;
+        const productVal = document.getElementById('main_product').value.split('|');
+        const rateVal = document.getElementById('rate_per_litre').value;
+
+        if (!rateDate || !rateVal) {
+            alert("Aap ne Date ya Rate ki value enter nahi ki!");
+            return;
+        }
+
+        const payload = {
+            rate_date: rateDate,
+            product_name: productVal[0],
+            product_type: productVal[1],
+            specific_category: productVal[2],
+            rate_per_litre: parseFloat(rateVal)
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await res.json();
+            if (result.status === "Success") {
+                alert("🎉 " + result.message);
+                document.getElementById('rate_per_litre').value = '';
+                await loadPriceHistory();
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (err) {
+            console.error("Save rate error:", err);
+            alert("System error: Database se connection fail ho gaya.");
+        }
+    }
+
+    async function deletePriceLog(id) {
+        if (confirm("Kya aap is rate log history entry ko delete karna chahte hain?")) {
+            try {
+                const res = await fetch(`${API_URL}/delete/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.status === "Success") {
+                    await loadPriceHistory();
+                } else {
+                    alert("Delete Error: " + result.message);
+                }
+            } catch (err) {
+                console.error("Delete error:", err);
+            }
+        }
+    }
+
+    // Combined Safe Initialization Execution
+    function initPricingPage() {
+        const today = getTodayDateString();
+        const workingDateElem = document.getElementById('working_date');
+        const rateActiveDateElem = document.getElementById('rate_active_date');
+
+        if (workingDateElem) workingDateElem.value = today;
+        if (rateActiveDateElem) rateActiveDateElem.value = today;
+
+        loadPriceHistory();
+    }
+
+    // Triggers as soon as DOM structure is parsed
+    document.addEventListener('DOMContentLoaded', initPricingPage);
+
+    // Backup trigger once full page assets and window finish loading
+    window.onload = () => {
+        const tbody = document.getElementById('pricingTableBody');
+        if (tbody && tbody.children.length === 0) {
+            initPricingPage();
+        }
+    };
+</script>
+
+</body>
+</html>

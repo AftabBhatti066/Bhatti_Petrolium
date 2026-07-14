@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhatti Petroleum - System Login</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #d6dbdf;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            width: 380px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            border: 1px solid #b0bec5;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .login-header h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .login-header p {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .login-body {
+            padding: 25px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #37474f;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #b0bec5;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: #1a2a6c;
+            box-shadow: 0 0 4px rgba(26, 42, 108, 0.3);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 10px;
+            background-color: #1a2a6c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-login:hover {
+            background-color: #0d1840;
+        }
+
+        .error-msg {
+            background-color: #fce4e4;
+            color: #c0392b;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        /* Register Link Area Styling */
+        .register-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #555555;
+        }
+
+        .register-link a {
+            color: #1a2a6c;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .login-footer {
+            background-color: #f1f4f6;
+            padding: 10px;
+            text-align: center;
+            font-size: 11px;
+            color: #7f8c8d;
+            border-top: 1px solid #cfd8dc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <div class="login-header">
+            <h2>⛽ Bhatti Petroleum</h2>
+            <p>BHOBRA - Integrated Management System v2.0</p>
+        </div>
+
+        <div class="login-body">
+            <div id="errorAlert" class="error-msg">Incorrect Username or Password!</div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username / ID</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+
+                <button type="submit" class="btn-login">Login to Dashboard</button>
+            </form>
+
+            <div class="register-link">
+                Don't have an account? <a href="register.html">Register Here</a>
+            </div>
+        </div>
+
+        <div class="login-footer">
+            Authorized Personnel Only &bull; System Status: Online
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const errorAlert = document.getElementById('errorAlert');
+
+        try {
+            // Updated Port to 5000
+            const response = await fetch('http://localhost:5000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.status === "Success") {
+                window.location.href = 'dashboard.html'; 
+            } else {
+                errorAlert.innerText = data.message || "Invalid credentials!";
+                errorAlert.style.display = 'block';
+            }
+        } catch (err) {
+            console.error("Login Error:", err);
+            errorAlert.innerText = "Server Connection Failed!";
+            errorAlert.style.display = 'block';
+        }
+    });
+</script>
+
+</body>
+
+</html>

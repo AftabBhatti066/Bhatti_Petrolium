@@ -1,0 +1,1130 @@
+/* ==========================================
+   1. GLOBAL RESET & BASE STYLES
+   ========================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #d6dbdf;
+    color: #2c3e50;
+    padding: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* ==========================================
+   2. WINDOW TITLE BAR
+   ========================================== */
+.window-title {
+    background: linear-gradient(135deg, #1a2a6c, #2980b9);
+    color: #ffffff;
+    padding: 6px 12px;
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    border: 1px solid #1f618d;
+}
+
+/* Menu Dropdown Bar (Optional Desktop Utility) */
+.menu-bar {
+    background-color: #f2f4f4;
+    padding: 3px 10px;
+    border-bottom: 1px solid #bdc3c7;
+    font-size: 12px;
+    color: #34495e;
+}
+
+.menu-bar span {
+    margin-right: 15px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.menu-bar span:hover {
+    color: #1a2a6c;
+    text-decoration: underline;
+}
+
+/* ==========================================
+   3. GLOBAL UNIFIED NAVIGATION TABS BAR
+   ========================================== */
+.tabs-container, .tabs-bar {
+    background-color: #e5e8e8;
+    padding: 6px 8px 0 8px;
+    border-bottom: 2px solid #bdc3c7;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.tab-btn, .tab-item {
+    padding: 5px 12px;
+    background-color: #f2f4f4;
+    border: 1px solid #bdc3c7;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    color: #2c3e50;
+    transition: all 0.15s ease-in-out;
+}
+
+.tab-btn:hover:not(.active), .tab-item:hover:not(.active) {
+    background-color: #d5dbdb;
+}
+
+.tab-btn.active, .tab-item.active {
+    background-color: #ffffff;
+    color: #1a2a6c;
+    font-weight: bold;
+    /* border-top: 3px solid #c0392b; */
+    border-bottom: 1px solid #ffffff;
+    position: relative;
+    top: 1px;
+    z-index: 10;
+}
+
+.date-wrap {
+    margin-left: auto;
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-bottom: 3px;
+}
+
+.date-wrap input[type="date"], .meta-header input[type="date"] {
+    padding: 3px 6px;
+    border: 1px solid #a6acaf;
+    border-radius: 3px;
+    font-weight: bold;
+    background-color: #ffffff;
+    font-size: 12px;
+}
+
+/* ==========================================
+   4. CONTROL PANELS & HEADERS
+   ========================================== */
+.meta-header {
+    background-color: #ffffff;
+    padding: 6px 10px;
+    border-bottom: 1px solid #bdc3c7;
+    font-size: 12px;
+}
+
+.section-header-box {
+    background-color: #d4e6f1;
+    color: #1b4f72;
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #a6acaf;
+    margin-top: 6px;
+}
+
+.control-panel {
+    background-color: #eaecee;
+    padding: 8px 10px;
+    border: 1px solid #a6acaf;
+    border-top: none;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+    color: #1b4f72;
+}
+
+.filter-input {
+    background-color: #fef9e7;
+    border: 1px solid #d4ac0d;
+    padding: 4px 8px;
+    font-weight: bold;
+    font-size: 13px;
+    width: 170px;
+    border-radius: 3px;
+}
+
+.add-cust-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-left: 2px solid #bdc3c7;
+    padding-left: 15px;
+}
+
+.add-cust-group input {
+    padding: 4px 6px;
+    border: 1px solid #bdc3c7;
+    font-size: 12px;
+    border-radius: 3px;
+}
+
+/* ==========================================
+   5. KPI STAT CARDS (DASHBOARD)
+   ========================================== */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.kpi-card {
+    background: #ffffff;
+    padding: 10px 14px;
+    border-radius: 4px;
+    border-left: 5px solid #1a2a6c;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.kpi-card.udhaar { border-left-color: #e74c3c; }
+.kpi-card.vasooli { border-left-color: #2ecc71; }
+.kpi-card.ledger { border-left-color: #f39c12; }
+.kpi-card.stock { border-left-color: #3498db; }
+
+.kpi-lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #7f8c8d;
+    font-weight: bold;
+}
+
+.kpi-val {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 3px;
+    color: #1a2a6c;
+}
+
+/* ==========================================
+   6. TABLES & INPUTS
+   ========================================== */
+.sheet-table, .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+    background-color: #ffffff;
+    border: 1px solid #a6acaf;
+}
+
+.sheet-table th, .sheet-table td,
+.data-table th, .data-table td {
+    border: 1px solid #bdc3c7;
+    padding: 6px 8px;
+    font-size: 12px;
+}
+
+.sheet-table th, .data-table th {
+    background-color: #b0c4de;
+    color: #1b4f72;
+    font-weight: bold;
+    text-align: center;
+}
+
+.sheet-input {
+    width: 100%;
+    border: 1px solid #bdc3c7;
+    padding: 3px 5px;
+    text-align: right;
+    font-weight: bold;
+    font-size: 12px;
+    font-family: monospace;
+    border-radius: 2px;
+}
+
+.sheet-input:focus {
+    outline: 1px solid #2980b9;
+    background-color: #fdfefe;
+}
+
+/* ==========================================
+   7. BUTTONS & BADGES
+   ========================================== */
+.btn-add {
+    background-color: #f2f4f4;
+    border: 1px solid #7f8c8d;
+    padding: 4px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.btn-add:hover { background-color: #e5e8e8; }
+
+.btn-save-sheet {
+    background-color: #27ae60;
+    color: white;
+    border: 1px solid #1e8449;
+    padding: 5px 14px;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-save-sheet:hover { background-color: #219653; }
+
+.btn-delete {
+    color: #c0392b;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.badge-low { background-color: #fce4e4; color: #c0392b; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+.badge-good { background-color: #e8f8f5; color: #27ae60; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+
+/* ==========================================
+   8. SUMMARY FOOTER BAR & UTILITIES
+   ========================================== */
+.summary-bar {
+    background-color: #fef9e7;
+    border: 1px solid #f9e79f;
+    padding: 8px 12px;
+    margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.net-income { color: #0e6251; font-size: 14px; }
+
+/* Text Alignments */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+.text-bold { font-weight: bold; }
+
+/* Main Grid Layout */
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+    background: #ffffff;
+    border-radius: 4px;
+    padding: 10px;
+    border: 1px solid #cfd8dc;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+/* ==========================================================================
+   PAGE: METER READING PAGE (Nozzle Readings & Fuel Stock Matrix)
+   Description: Specific layout styles for meter reading matrix tables,
+                live nozzle indicators, and action toolbars with full 
+                mobile and tablet responsiveness.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. ACTION TOOLBAR & CONTROLS
+   -------------------------------------------------------------------------- */
+.action-bar {
+    background-color: #eaecee;
+    padding: 8px 10px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid #a6acaf;
+    border-top: none;
+    flex-wrap: wrap;
+    border-radius: 0 0 2px 2px;
+}
+
+.action-bar input[type="date"] {
+    padding: 4px 8px;
+    border: 1px solid #bdc3c7;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 12px;
+    background-color: #ffffff;
+    outline: none;
+}
+
+.action-bar input[type="date"]:focus {
+    border-color: #2980b9;
+}
+
+/* --------------------------------------------------------------------------
+   2. BUTTONS, BADGES & INFO TAGS
+   -------------------------------------------------------------------------- */
+.btn-save {
+    background-color: #27ae60;
+    color: #ffffff;
+    border: 1px solid #1e8449;
+    padding: 5px 14px;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.btn-save:hover {
+    background-color: #219653;
+}
+
+.btn-reset {
+    background-color: #e74c3c;
+    color: #ffffff;
+    border: 1px solid #c0392b;
+    padding: 5px 14px;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.btn-reset:hover {
+    background-color: #c0392b;
+}
+
+.info-tag {
+    background-color: #fef9e7;
+    border: 1px solid #f9e79f;
+    color: #b7950b;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.badge-right {
+    margin-left: auto;
+    background-color: #0e6251;
+    color: #58d68d;
+    padding: 4px 10px;
+    border-radius: 3px;
+    text-align: right;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    line-height: 1.3;
+    font-weight: bold;
+}
+
+/* --------------------------------------------------------------------------
+   3. SECTION BOXES & LIVE INDICATORS
+   -------------------------------------------------------------------------- */
+.section-box {
+    background-color: #ffffff;
+    border: 1px solid #a6acaf;
+    margin: 10px 0;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    background-color: #d4e6f1;
+    color: #1b4f72;
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #a6acaf;
+}
+
+.live-indicator {
+    color: #27ae60;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   4. METER READING MATRIX TABLE & INPUTS
+   -------------------------------------------------------------------------- */
+.matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: right;
+    background-color: #ffffff;
+}
+
+.matrix-table th, 
+.matrix-table td {
+    border: 1px solid #bdc3c7;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.matrix-table th {
+    background-color: #ced4da;
+    color: #2c3e50;
+    font-weight: bold;
+    text-align: center;
+}
+
+.matrix-table th.header-desc {
+    text-align: left;
+    width: 16%;
+    background-color: #ebf5fb;
+    color: #1b4f72;
+}
+
+.matrix-table td.row-desc {
+    text-align: left;
+    font-weight: bold;
+    background-color: #f2f4f4;
+    color: #2c3e50;
+}
+
+.val-blue {
+    color: #1b4f72;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+}
+
+.val-purple {
+    color: #7d3c98;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+}
+
+.matrix-input {
+    width: 100%;
+    border: 1px solid #bdc3c7;
+    padding: 4px 6px;
+    text-align: right;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    box-sizing: border-box;
+    border-radius: 2px;
+    background-color: #ffffff;
+    outline: none;
+    transition: all 0.15s ease-in-out;
+}
+
+.matrix-input:focus {
+    border-color: #2980b9;
+    background-color: #fdfefe;
+    box-shadow: inset 0 0 2px rgba(41, 128, 185, 0.4);
+}
+
+/* ==========================================================================
+   MEDIA SCREENING (RESPONSIVE LAYOUT FOR MOBILE & TABLETS)
+   ========================================================================== */
+
+/* Tablet Screen Fixes (Max Width: 768px) */
+@media screen and (max-width: 768px) {
+    .action-bar {
+        gap: 8px;
+    }
+
+    .badge-right {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Enables smooth side-scrolling for wide nozzle matrix tables */
+    .section-box {
+        overflow-x: auto;
+    }
+
+    .matrix-table {
+        min-width: 600px; /* Ensures numbers don't wrap tightly */
+    }
+}
+
+/* Mobile Screen Fixes (Max Width: 480px) */
+@media screen and (max-width: 480px) {
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-bar input[type="date"],
+    .btn-save,
+    .btn-reset,
+    .info-tag {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .section-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .matrix-table {
+        min-width: 500px;
+    }
+
+    .matrix-table th, 
+    .matrix-table td {
+        padding: 4px 6px;
+        font-size: 11px;
+    }
+
+    .matrix-input {
+        font-size: 12px;
+        padding: 3px;
+    }
+}
+
+
+/* ==========================================================================
+   PAGE: LEDGERS PAGE (Customer / Udhaar Ledger Management)
+   Description: Specific styling for ledger forms, transaction entries,
+                and responsive media screening for mobile/tablet views.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. LEDGER STEP BOX & SECTION HEADERS
+   -------------------------------------------------------------------------- */
+.step-box {
+    background-color: #d4e6f1;
+    color: #1b4f72;
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #a6acaf;
+    margin-top: 6px;
+    border-radius: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   2. FORM PANELS & INPUT GROUPS
+   -------------------------------------------------------------------------- */
+.form-panel {
+    background-color: #eaecee;
+    padding: 10px;
+    border: 1px solid #a6acaf;
+    border-top: none;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    border-radius: 0 0 2px 2px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input-group label {
+    font-weight: bold;
+    color: #1b4f72;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.input-group input,
+.input-group select {
+    padding: 4px 8px;
+    border: 1px solid #bdc3c7;
+    font-size: 12px;
+    height: 28px;
+    border-radius: 3px;
+    background-color: #ffffff;
+    outline: none;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    border-color: #2980b9;
+    box-shadow: 0 0 2px rgba(41, 128, 185, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   3. LEDGER BUTTON VARIATIONS
+   -------------------------------------------------------------------------- */
+.btn {
+    padding: 5px 14px;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid #7f8c8d;
+    transition: background-color 0.15s ease-in-out, transform 0.05s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-register {
+    background-color: #1a2a6c;
+    color: #ffffff;
+    border-color: #0f1b4c;
+}
+
+.btn-register:hover {
+    background-color: #243b94;
+}
+
+.btn-reset {
+    background-color: #e74c3c;
+    color: #ffffff;
+    border-color: #c0392b;
+    padding: 4px 8px;
+}
+
+.btn-reset:hover {
+    background-color: #c0392b;
+}
+
+.btn-log-fuel {
+    background-color: #d6eaf8;
+    color: #1b4f72;
+    border-color: #aed6f1;
+}
+
+.btn-log-fuel:hover {
+    background-color: #aed6f1;
+}
+
+/* --------------------------------------------------------------------------
+   4. LEDGER DATA TABLES
+   -------------------------------------------------------------------------- */
+.sheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+    background-color: #ffffff;
+    border: 1px solid #a6acaf;
+}
+
+.sheet-table th,
+.sheet-table td {
+    border: 1px solid #bdc3c7;
+    padding: 6px 10px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.sheet-table th {
+    background-color: #b0c4de;
+    color: #1b4f72;
+    font-weight: bold;
+}
+
+.sheet-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.sheet-table tbody tr:hover {
+    background-color: #ebf5fb;
+}
+
+.btn-delete {
+    color: #c0392b;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.btn-delete:hover {
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   5. SUMMARY BAR (TOTALS & BALANCE)
+   -------------------------------------------------------------------------- */
+.summary-bar {
+    background-color: #fef9e7;
+    border: 1px solid #f9e79f;
+    padding: 8px 12px;
+    margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 13px;
+    border-radius: 2px;
+}
+
+/* ==========================================================================
+   MEDIA SCREENING (RESPONSIVE LAYOUT FOR MOBILE & TABLETS)
+   ========================================================================== */
+
+/* Tablet Screen Fixes (Max Width: 768px) */
+@media screen and (max-width: 768px) {
+    .form-panel {
+        gap: 10px;
+    }
+
+    .input-group {
+        flex: 1 1 calc(50% - 10px); /* 2 Column layout on tablets */
+    }
+
+    .input-group input,
+    .input-group select {
+        width: 100%;
+    }
+
+    .btn {
+        width: 100%; /* Full width buttons for touch screens */
+        padding: 7px 10px;
+    }
+}
+
+/* Mobile Screen Fixes (Max Width: 480px) */
+@media screen and (max-width: 480px) {
+    .step-box {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .form-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .input-group {
+        flex: 1 1 100%; /* Single column inputs on mobile */
+        width: 100%;
+    }
+
+    .summary-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    /* Horizontal scroll for table on mobile screens */
+    .sheet-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+
+
+/* ==========================================================================
+   PAGE: REPORTS PAGE (Financial Summaries & Analytical Reports)
+   Description: Specific layout styles for report filters, stat summary cards,
+                data grids, and responsive media screening for mobile/tablet.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TOP BAR NAVIGATION & BUTTONS
+   -------------------------------------------------------------------------- */
+.top-bar {
+    background: #ffffff;
+    padding: 10px 15px;
+    border-bottom: 2px solid #1a2a6c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.nav-buttons button {
+    background-color: #f2f4f4;
+    border: 1px solid #bdc3c7;
+    padding: 6px 12px;
+    margin-right: 5px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.15s ease-in-out;
+}
+
+.nav-buttons button:hover {
+    background-color: #e5e8e8;
+}
+
+.nav-buttons button.active {
+    background-color: #1a2a6c;
+    color: #ffffff;
+    border-color: #0f1b4c;
+}
+
+/* --------------------------------------------------------------------------
+   2. DASHBOARD CARDS & FILTER SECTION
+   -------------------------------------------------------------------------- */
+.dashboard-card {
+    background: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid #bdc3c7;
+}
+
+.card-header {
+    background-color: #1b4f72;
+    color: #ffffff;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.filter-section {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: bold;
+    font-size: 11px;
+    color: #1b4f72;
+    text-transform: uppercase;
+}
+
+.form-group input {
+    padding: 5px 8px;
+    border: 1px solid #bdc3c7;
+    border-radius: 3px;
+    font-size: 12px;
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: #2980b9;
+}
+
+.btn-filter {
+    background-color: #2980b9;
+    color: #ffffff;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.btn-filter:hover {
+    background-color: #1f618d;
+}
+
+/* --------------------------------------------------------------------------
+   3. SUMMARY STAT CARDS (CREDIT, DEBIT, BALANCE)
+   -------------------------------------------------------------------------- */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 15px;
+}
+
+.card-stat {
+    background: #ffffff;
+    border-left: 5px solid #bdc3c7;
+    padding: 12px 15px;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    border-top: 1px solid #eaecee;
+    border-right: 1px solid #eaecee;
+    border-bottom: 1px solid #eaecee;
+}
+
+.card-stat.credit { border-left-color: #e74c3c; }
+.card-stat.debit { border-left-color: #2ecc71; }
+.card-stat.balance { border-left-color: #3498db; }
+
+.card-stat h4 {
+    font-size: 11px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.card-stat .amount {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-top: 5px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.text-danger { color: #e74c3c; }
+.text-success { color: #2ecc71; }
+.text-primary { color: #3498db; }
+
+/* --------------------------------------------------------------------------
+   4. REPORT DATA TABLES & FOOTER
+   -------------------------------------------------------------------------- */
+.table-container {
+    padding: 15px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background-color: #ffffff;
+}
+
+table th, table td {
+    padding: 8px 10px;
+    border: 1px solid #bdc3c7;
+    text-align: left;
+}
+
+table th {
+    background-color: #b0c4de;
+    color: #1b4f72;
+    font-weight: bold;
+}
+
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+
+table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+table tr:hover {
+    background-color: #ebf5fb;
+}
+
+/* Total Footer Row */
+table tfoot tr {
+    background-color: #eaecee;
+    font-weight: bold;
+    font-size: 12px;
+    color: #1b4f72;
+}
+
+/* ==========================================================================
+   MEDIA SCREENING (RESPONSIVE LAYOUT FOR MOBILE & TABLETS)
+   ========================================================================== */
+
+/* Tablet Screen Fixes (Max Width: 768px) */
+@media screen and (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on tablet */
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .filter-section {
+        gap: 10px;
+    }
+}
+
+/* Mobile Screen Fixes (Max Width: 480px) */
+@media screen and (max-width: 480px) {
+    .nav-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        width: 100%;
+    }
+
+    .nav-buttons button {
+        flex: 1 1 calc(50% - 5px);
+        margin-right: 0;
+        text-align: center;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr; /* Single column stats on mobile */
+    }
+
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-group input,
+    .btn-filter {
+        width: 100%;
+    }
+
+    .table-container {
+        padding: 5px;
+    }
+
+    table th, table td {
+        padding: 6px 6px;
+        font-size: 11px;
+    }
+}
