@@ -7,10 +7,11 @@ router.post('/add', meterController.addReading);
 router.get('/all', meterController.getAllReadings);
 
 router.get('/tank-stock', meterController.getTankStock);
-router.post('/update-receipt', meterController.updateStockReceipt);
-
+// 🔥 Sahi function name map kar diya: updateReceipt
+router.post('/update-receipt', meterController.updateReceipt);
 
 router.get('/lubricant-stock', meterController.getLubricantStock);
-router.post('/update-lubricants', meterController.saveLubricantTransactions);
+// 🔥 Sahi function name map kar diya: updateLubricants
+router.post('/update-lubricants', meterController.updateLubricants);
 
 module.exports = router;

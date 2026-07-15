@@ -1,15 +1,30 @@
 const db = require('../config/db');
 
 // ==========================================
-// 1. VEHICLE REGISTRATION (Step 1)
+// 1. VEHICLE REGISTRATION (Step 1 - Filtered by user_id)
 // ==========================================
 exports.registerVehicle = async (req, res) => {
     try {
-        const { gari_number, owner_name, contact_number, address } = req.body;
+        const { gari_number, owner_name, contact_number, address, userId } = req.body;
 
-        // Address k spellings database table k mutabik clear kar diye
-        const query = `INSERT INTO vehicles (gari_number, owner_name, contact_number, address) VALUES (?, ?, ?, ?)`;
-        await db.query(query, [gari_number, owner_name, contact_number, address]);
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID required hai!" });
+        }
+
+        const cleanGariNumber = gari_number.trim().toLowerCase();
+
+        // Check if vehicle already registered FOR THIS USER
+        const [existing] = await db.query(
+            'SELECT id FROM vehicles WHERE LOWER(gari_number) = ? AND user_id = ?',
+            [cleanGariNumber, userId]
+        );
+
+        if (existing.length > 0) {
+            return res.status(400).json({ status: "Error", message: "Yeh vehicle aap ke paas pehle se registered hai!" });
+        }
+
+        const query = `INSERT INTO vehicles (gari_number, owner_name, contact_number, address, user_id) VALUES (?, ?, ?, ?, ?)`;
+        await db.query(query, [gari_number.trim(), owner_name, contact_number, address, userId]);
 
         res.json({
             status: "success",
@@ -17,29 +32,25 @@ exports.registerVehicle = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ status: "Error", message: "Vehicle is already registered!" });
-        }
         res.status(500).json({ status: "Error", db_error: error.message });
     }
 };
 
 // ==========================================
-// 2. DAILY CREDIT FUEL LOG (Step 2)
+// 2. DAILY CREDIT FUEL LOG (Step 2 - Filtered by user_id)
 // ==========================================
 exports.logCreditFuel = async (req, res) => {
     try {
-        const { gari_number, driver_name, product, litres, entry_date } = req.body;
+        const { gari_number, driver_name, product, litres, entry_date, userId } = req.body;
 
-        if (!gari_number || !product || !litres || !entry_date) {
-            return res.status(400).json({ status: "Error", message: "Tamam fields required hain!" });
+        if (!gari_number || !product || !litres || !entry_date || !userId) {
+            return res.status(400).json({ status: "Error", message: "Tamam fields samet User ID required hain!" });
         }
 
-        // Rate fetch from fuel_rates using 'product_name' or 'product_type'
-        // Updated column name: rate_per_litre
+        // Rate fetch from fuel_rates for this specific user
         const [fuelRateResult] = await db.query(
-            'SELECT rate_per_litre FROM fuel_rates WHERE LOWER(product_name) LIKE ? OR LOWER(product_type) LIKE ? ORDER BY id DESC LIMIT 1',
-            [`%${product.trim().toLowerCase()}%`, `%${product.trim().toLowerCase()}%`]
+            'SELECT rate_per_litre FROM fuel_rates WHERE (LOWER(product_name) LIKE ? OR LOWER(product_type) LIKE ?) AND user_id = ? ORDER BY id DESC LIMIT 1',
+            [`%${product.trim().toLowerCase()}%`, `%${product.trim().toLowerCase()}%`, userId]
         );
         
         if (!fuelRateResult || fuelRateResult.length === 0) {
@@ -52,13 +63,13 @@ exports.logCreditFuel = async (req, res) => {
         const current_rate = parseFloat(fuelRateResult[0].rate_per_litre) || 0;
         const total_amount = parseFloat(litres) * current_rate;
 
-        // Insert into credit_ledgers
+        // Insert into credit_ledgers with user_id
         const insertQuery = `
-            INSERT INTO credit_ledgers (gari_number, driver_name, product, litres, rate_pkr, total_amount, entry_date) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO credit_ledgers (gari_number, driver_name, product, litres, rate_pkr, total_amount, entry_date, user_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-        await db.query(insertQuery, [gari_number, driver_name, product, litres, current_rate, total_amount, entry_date]);
+        await db.query(insertQuery, [gari_number.trim(), driver_name, product, litres, current_rate, total_amount, entry_date, userId]);
 
         res.json({
             status: "Success",
@@ -76,23 +87,48 @@ exports.logCreditFuel = async (req, res) => {
         res.status(500).json({ status: "Error", message: "Database Error: " + error.message });
     }
 };
-
 // ==========================================
-// 3. GARI KA LEDGER / TAMAM HISTORY FETCH KARNA
+// 3. GARI KA LEDGER / TAMAM HISTORY FETCH KARNA (Filtered by user_id)
 // ==========================================
 exports.getVehicleLedger = async (req, res) => {
     try {
         const { gari_number } = req.params;
+        const userId = req.query.userId; // 🔥 Get from query params
+
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID parameter missing!" });
+        }
 
         let query = '';
         let queryParams = [];
 
-        // Agar 'ALL' manga gaya ho ya blank ho to SAARE records le aao
+        // Hum ne credit_ledgers ko vehicles table ke sath LEFT JOIN kar diya hai taakay Contact aur Address details bhi fetch hon
         if (!gari_number || gari_number === 'ALL') {
-            query = 'SELECT * FROM credit_ledgers ORDER BY id DESC';
+            query = `
+                SELECT 
+                    cl.*, 
+                    v.contact_number AS contact_info, 
+                    v.address 
+                FROM credit_ledgers cl
+                LEFT JOIN vehicles v 
+                    ON LOWER(cl.gari_number) = LOWER(v.gari_number) AND cl.user_id = v.user_id
+                WHERE cl.user_id = ? 
+                ORDER BY cl.id DESC
+            `;
+            queryParams = [userId];
         } else {
-            query = 'SELECT * FROM credit_ledgers WHERE LOWER(gari_number) LIKE LOWER(?) ORDER BY id DESC';
-            queryParams = [`%${gari_number.trim()}%`];
+            query = `
+                SELECT 
+                    cl.*, 
+                    v.contact_number AS contact_info, 
+                    v.address 
+                FROM credit_ledgers cl
+                LEFT JOIN vehicles v 
+                    ON LOWER(cl.gari_number) = LOWER(v.gari_number) AND cl.user_id = v.user_id
+                WHERE LOWER(cl.gari_number) LIKE LOWER(?) AND cl.user_id = ? 
+                ORDER BY cl.id DESC
+            `;
+            queryParams = [`%${gari_number.trim()}%`, userId];
         }
 
         const [rows] = await db.query(query, queryParams);
@@ -117,31 +153,34 @@ exports.getVehicleLedger = async (req, res) => {
         res.status(500).json({ status: "Error", db_error: error.message });
     }
 };
-
 // ==========================================
-// 4. KISI SPECIFIC CREDIT ENTRY KO DELETE KARNA
+// 4. KISI SPECIFIC CREDIT ENTRY KO DELETE KARNA (Filtered by user_id)
 // ==========================================
 exports.deleteCreditEntry = async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.query.userId; // Security check
 
-        // Pehle check karte hain k kya yeh entry sach mein majood hai?
-        const [entryCheck] = await db.query('SELECT * FROM credit_ledgers WHERE id = ?', [id]);
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID validation fail!" });
+        }
+
+        // Check if entry belongs to this user
+        const [entryCheck] = await db.query('SELECT * FROM credit_ledgers WHERE id = ? AND user_id = ?', [id, userId]);
         
         if (entryCheck.length === 0) {
             return res.status(404).json({
                 status: "Error",
-                message: "Yeh entry pehle hi delete ho chuki hai ya majood nahi hai."
+                message: "Yeh entry pehle hi delete ho chuki hai ya aap authorized nahi hain."
             });
         }
 
-        // Entry ko delete karne ki query
-        const deleteQuery = 'DELETE FROM credit_ledgers WHERE id = ?';
-        await db.query(deleteQuery, [id]);
+        const deleteQuery = 'DELETE FROM credit_ledgers WHERE id = ? AND user_id = ?';
+        await db.query(deleteQuery, [id, userId]);
 
         res.json({
             status: "Success",
-            message: `Entry ID ${id} khate sa kamyabi sa khatam kar di gayi hai!`
+            message: `Entry ID ${id} khate se kamyabi se khatam kar di gayi hai!`
         });
 
     } catch (error) {

@@ -9,17 +9,18 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🔥 YEH LINE ADD KAREIN: 
-// Agar aap ki HTML files root folder mein hain:
-app.use(express.static(__dirname));
+// 🔥 FIXED: index: false karne se auto index.html open hona band ho jaye ga
+app.use(express.static(__dirname, { index: false }));
 
-// Ya agar aap ki HTML files 'views' folder ke andar hain, to yeh line use karein:
-// app.use(express.static(path.join(__dirname, 'views')));
+// 🎯 Ab yeh route bilkul sahi kaam karega aur seedha login page kholega
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
 
 // API Routes
 app.use('/api', authRoutes);
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

@@ -1,72 +1,91 @@
 const db = require('../config/db');
 
-// 1. New customer registration
+// 1. New customer registration (Filtered by user_id)
 exports.addCustomer = async (req, res) => {
     try {
-        const { customer_name, search_id } = req.body;
+        const { customer_name, search_id, userId } = req.body;
 
-        if (!customer_name || !search_id) {
-            return res.status(400).json({ status: "Error", message: "Customer Name aur Search ID required hain!" });
+        if (!customer_name || !search_id || !userId) {
+            return res.status(400).json({ status: "Error", message: "Customer Name, Search ID aur User ID required hain!" });
         }
 
         const cleanSearchId = search_id.trim().toLowerCase();
-        const query = `INSERT INTO daily_customers (customer_name, search_id) VALUES (?, ?)`;
-        await db.query(query, [customer_name.trim(), cleanSearchId]);
+        
+        // Check if customer with same search ID exists FOR THIS USER
+        const [existing] = await db.query(
+            'SELECT id FROM daily_customers WHERE LOWER(search_id) = ? AND user_id = ?', 
+            [cleanSearchId, userId]
+        );
+        if (existing.length > 0) {
+            return res.status(400).json({ status: "Error", message: "Yeh Search ID aap ke paas pehle se registered hai!" });
+        }
+
+        const query = `INSERT INTO daily_customers (customer_name, search_id, user_id) VALUES (?, ?, ?)`;
+        await db.query(query, [customer_name.trim(), cleanSearchId, userId]);
 
         res.json({
             status: "Success",
-            message: `Customer ${customer_name} (${cleanSearchId}) added successfully!`
+            message: `Customer ${customer_name} added successfully!`
         });
     } catch (error) {
         console.error("Add Customer Error:", error);
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ status: "Error", message: "Yeh Search ID pehle se registered hai!" });
-        }
         res.status(500).json({ status: "Error", db_error: error.message });
     }
 };
 
-// 2. Bulk Batch Save Daily Sheet Entries (Duplicates Fix)
+// 2. Bulk Batch Save Daily Sheet Entries (Filtered by user_id)
 exports.saveDailySheetEntry = async (req, res) => {
     try {
-        // Front-end se 'entries' array ya single entry dono support honge
         const entries = req.body.entries ? req.body.entries : [req.body];
+        const mainUserId = req.body.userId; 
 
-        if (!entries || entries.length === 0) {
-            return res.status(400).json({ status: "Error", message: "Koi entries nahi mili." });
+        if (!entries || entries.length === 0 || !mainUserId) {
+            return res.status(400).json({ status: "Error", message: "Entries ya User ID nahi mili." });
         }
 
         for (const item of entries) {
-            const { search_id, debit_udhaar, credit_vasooli, sheet_date, customer_name } = item;
+            const { search_id, debit_udhaar, credit_vasooli, sheet_date, customer_name, userId } = item;
+            const currentUserId = userId || mainUserId;
 
-            if (!search_id || !sheet_date) continue;
+            if (!search_id || !sheet_date || !currentUserId) continue;
 
             const cleanSearchId = search_id.trim().toLowerCase();
             const debit = parseFloat(debit_udhaar) || 0;
             const credit = parseFloat(credit_vasooli) || 0;
             const total_balance = debit - credit;
 
-            // Ensure customer exists in master customer list
+            // Ensure customer entry exists in master customer list for this specific user
             if (customer_name) {
                 await db.query(
-                    `INSERT INTO daily_customers (customer_name, search_id) 
-                     VALUES (?, ?) 
+                    `INSERT INTO daily_customers (customer_name, search_id, user_id) 
+                     VALUES (?, ?, ?) 
                      ON DUPLICATE KEY UPDATE customer_name = VALUES(customer_name)`,
-                    [customer_name.trim(), cleanSearchId]
+                    [customer_name.trim(), cleanSearchId, currentUserId]
                 );
             }
 
-            // Upsert: Search ID aur Date match hone par purana record update hoga, naya duplicate nahi banega
-            const query = `
-                INSERT INTO daily_sheets (search_id, debit_udhaar, credit_vasooli, total_balance, sheet_date) 
-                VALUES (?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE 
-                    debit_udhaar = VALUES(debit_udhaar),
-                    credit_vasooli = VALUES(credit_vasooli),
-                    total_balance = VALUES(total_balance)
-            `;
+            // Check if sheet row already exists for this search_id, sheet_date AND user_id
+            const [exists] = await db.query(
+                'SELECT id FROM daily_sheets WHERE LOWER(search_id) = ? AND DATE(sheet_date) = DATE(?) AND user_id = ?',
+                [cleanSearchId, sheet_date, currentUserId]
+            );
 
-            await db.query(query, [cleanSearchId, debit, credit, total_balance, sheet_date]);
+            if (exists.length > 0) {
+                // Update
+                await db.query(
+                    `UPDATE daily_sheets 
+                     SET debit_udhaar = ?, credit_vasooli = ?, total_balance = ? 
+                     WHERE id = ?`,
+                    [debit, credit, total_balance, exists[0].id]
+                );
+            } else {
+                // Insert
+                await db.query(
+                    `INSERT INTO daily_sheets (search_id, debit_udhaar, credit_vasooli, total_balance, sheet_date, user_id) 
+                     VALUES (?, ?, ?, ?, ?, ?)`,
+                    [cleanSearchId, debit, credit, total_balance, sheet_date, currentUserId]
+                );
+            }
         }
 
         res.json({
@@ -79,10 +98,15 @@ exports.saveDailySheetEntry = async (req, res) => {
     }
 };
 
-// 3. Rozana ki mukammal sheet fetch karna (Master + Entries)
+// 3. Fetch Daily Sheet By Date (Filtered by user_id)
 exports.getDailySheetByDate = async (req, res) => {
     try {
-        const { date } = req.params; // Format: YYYY-MM-DD
+        const { date } = req.params; 
+        const userId = req.query.userId; // 🔥 Catch User ID filter
+
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID parameter missing!" });
+        }
 
         const query = `
             SELECT 
@@ -96,10 +120,12 @@ exports.getDailySheetByDate = async (req, res) => {
             LEFT JOIN daily_sheets ds 
                 ON LOWER(TRIM(dc.search_id)) = LOWER(TRIM(ds.search_id)) 
                 AND DATE(ds.sheet_date) = DATE(?)
+                AND ds.user_id = dc.user_id
+            WHERE dc.user_id = ?
             ORDER BY dc.id ASC
         `;
         
-        const [rows] = await db.query(query, [date]);
+        const [rows] = await db.query(query, [date, userId]);
 
         let total_debit = 0;
         let total_credit = 0;
@@ -123,7 +149,7 @@ exports.getDailySheetByDate = async (req, res) => {
     }
 };
 
-// 4. Daily Sheet se Entry Delete karna [X]
+// 4. Daily Sheet se Entry Delete karna
 exports.deleteSheetEntry = async (req, res) => {
     try {
         const { id } = req.params;
@@ -144,22 +170,28 @@ exports.deleteSheetEntry = async (req, res) => {
     }
 };
 
-// 5. Customer ko Permanent Delete karna (With search_id)
+// 5. Customer ko Permanent Delete karna (Filtered by user_id)
 exports.deleteCustomerPermanently = async (req, res) => {
     try {
         const { search_id } = req.params;
+        const userId = req.query.userId; // 🔥 Secure validation
+
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID authorization fail!" });
+        }
+
         const cleanSearchId = search_id.trim().toLowerCase();
 
-        await db.query('DELETE FROM daily_sheets WHERE LOWER(search_id) = ?', [cleanSearchId]);
-        const [result] = await db.query('DELETE FROM daily_customers WHERE LOWER(search_id) = ?', [cleanSearchId]);
+        await db.query('DELETE FROM daily_sheets WHERE LOWER(search_id) = ? AND user_id = ?', [cleanSearchId, userId]);
+        const [result] = await db.query('DELETE FROM daily_customers WHERE LOWER(search_id) = ? AND user_id = ?', [cleanSearchId, userId]);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ status: "Error", message: "Yeh Customer / Search ID majood nahi hai!" });
+            return res.status(404).json({ status: "Error", message: "Yeh Customer majood nahi hai ya aap authorized nahi hain!" });
         }
 
         res.json({
             status: "Success",
-            message: `Customer (${cleanSearchId}) permanent delete ho gaya.`
+            message: `Customer permanent delete ho gaya.`
         });
     } catch (error) {
         console.error("Delete Customer Error:", error);

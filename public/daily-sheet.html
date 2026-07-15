@@ -325,7 +325,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
     const API_URL = '/api/daily-sheet';
 
     function getTodayDateString() {
@@ -341,9 +341,13 @@
         if (!dateInput || !dateInput.value) return;
 
         const currentDate = dateInput.value;
+        // 🔥 FIXED: LocalStorage se userId li
+        const userId = localStorage.getItem('userId');
+        if (!userId) { window.location.href = '/login.html'; return; }
 
         try {
-            const response = await fetch(`${API_URL}/view/${currentDate}`);
+            // 🔥 FIXED: URL mein userId pass ki taakay sirf is user ke customers/entries aayin
+            const response = await fetch(`${API_URL}/view/${currentDate}?userId=${userId}`);
             const result = await response.json();
 
             if (result.status === "Success") {
@@ -434,6 +438,7 @@
     async function addNewCustomer() {
         const name = document.getElementById('new_cust_name').value.trim();
         const searchId = document.getElementById('new_cust_id').value.trim();
+        const userId = localStorage.getItem('userId');
 
         if (!name || !searchId) {
             alert("Customer Name aur Search ID dono zaroori hain!");
@@ -444,7 +449,8 @@
             const res = await fetch(`${API_URL}/customer`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customer_name: name, search_id: searchId })
+                // 🔥 FIXED: Body mein userId bhej di taakay customer us unique manager se map ho
+                body: JSON.stringify({ customer_name: name, search_id: searchId, userId: userId })
             });
 
             const result = await res.json();
@@ -460,11 +466,11 @@
         }
     }
 
-    // Single Batch Payload Save (No duplicates)
     async function saveAllSheetEntries() {
         const currentDate = document.getElementById('working_date').value;
         const tbody = document.getElementById('sheetTableBody');
         const rows = tbody.querySelectorAll('tr');
+        const userId = localStorage.getItem('userId');
 
         if (rows.length === 0) return;
 
@@ -482,7 +488,8 @@
                     search_id: searchIdCell.textContent.trim(),
                     debit_udhaar: parseFloat(debitInput.value) || 0,
                     credit_vasooli: parseFloat(creditInput.value) || 0,
-                    sheet_date: currentDate
+                    sheet_date: currentDate,
+                    userId: userId // 🔥 FIXED: Har row batch entry mein manager ID include ki
                 });
             }
         });
@@ -491,7 +498,7 @@
             const res = await fetch(`${API_URL}/save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ entries: entries, sheet_date: currentDate })
+                body: JSON.stringify({ entries: entries, sheet_date: currentDate, userId: userId })
             });
 
             const result = await res.json();
@@ -508,12 +515,14 @@
 
     async function deleteEntry(event, id, searchId) {
         if (event) event.stopPropagation();
+        const userId = localStorage.getItem('userId');
 
         const choice = confirm(`Customer (${searchId}) ko delete karna chahte hain?`);
         if (!choice) return;
 
         try {
-            const res = await fetch(`${API_URL}/delete-customer/${searchId}`, { method: 'DELETE' });
+            // 🔥 FIXED: Delete request ke sath query string parameter mein userId bhej di
+            const res = await fetch(`${API_URL}/delete-customer/${searchId}?userId=${userId}`, { method: 'DELETE' });
             const result = await res.json();
 
             if (result.status === "Success") {

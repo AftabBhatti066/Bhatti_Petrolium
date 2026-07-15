@@ -20,11 +20,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Static files serve karna (HTML/CSS/JS)
+// 🔥 FIXED: index: false karne se auto index.html open hona band ho jata hai
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'views'))); // Views folder ke liye static access
+app.use(express.static(path.join(__dirname, 'views'), { index: false }));
 
 // Favicon 404 Error Ignore karne ke liye
 app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+// ==========================================
+// 🎯 DEFAULT BASE ROUTE (LINK OPEN HO TO SEEDHA LOGIN CHALE)
+// ==========================================
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 
 // ==========================================
 // API ROUTES SETUP
@@ -54,7 +62,7 @@ app.use('/api/daily-sheet', dailySheetRoutes);
 const dashboardRoutes = require('./routes/dashboardRoutes');
 app.use('/api/dashboard', dashboardRoutes);
 
-// Report API Routes (Fixed Variable & Route Binding)
+// Report API Routes
 const reportRoutes = require('./routes/reportRoutes'); 
 app.use('/api/report', reportRoutes);
 
@@ -82,14 +90,9 @@ app.get('/ledgers', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'ledgers.html'));
 });
 
-// Report Page Route (Added)
+// Report Page Route
 app.get('/report', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'report.html'));
-});
-
-// Base Route Test
-app.get('/', (req, res) => {
-    res.send("Bhatti Petroleum - Version 2.0 Chal Gaya!");
 });
 
 // ==========================================

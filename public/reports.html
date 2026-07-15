@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -181,12 +182,13 @@
         }
     </style> -->
 </head>
+
 <body>
-     <div class="window-title">
+    <div class="window-title">
         <span>⛽ Bhatti Petroleum, BHOBRA - Integrated Dashboard</span>
         <!-- <span>Version 2.0</span> -->
     </div>
-    
+
     <div class="tabs-container">
         <a href="dashboard.html" class="tab-btn">📊 Dashboard</a>
         <a href="meter-reading.html" class="tab-btn">⛽ Meter Reading</a>
@@ -200,7 +202,8 @@
     <div class="dashboard-card">
         <div class="card-header">
             <span>📊 Petrol Pump Daily Credit & Debit Summary Report</span>
-            <button class="btn-filter" style="background-color: #27ae60;" onclick="fetchMonthlyData()">🔄 Refresh Report</button>
+            <button class="btn-filter" style="background-color: #27ae60;" onclick="fetchMonthlyData()">🔄 Refresh
+                Report</button>
         </div>
 
         <div class="filter-section">
@@ -242,7 +245,7 @@
                     </tr>
                 </thead>
                 <tbody id="dailyReportBody">
-                    </tbody>
+                </tbody>
                 <tfoot>
                     <tr>
                         <td class="text-center">GRAND TOTAL</td>
@@ -256,106 +259,114 @@
     </div>
 
     <script>
-    // Automatic Date Selection for Current Month
-    function setCurrentMonthDates() {
-        const now = new Date();
-        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        // Automatic Date Selection for Current Month
+        function setCurrentMonthDates() {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-        // Date format into YYYY-MM-DD
-        document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
-        document.getElementById('toDate').value = lastDay.toISOString().split('T')[0];
-    }
-
-    // Fetch Live Monthly Data from Database
-    async function fetchMonthlyData() {
-        const fromDate = document.getElementById('fromDate').value;
-        const toDate = document.getElementById('toDate').value;
-
-        if (!fromDate || !toDate) {
-            alert("Dono dates select karein!");
-            return;
+            // Date format into YYYY-MM-DD
+            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('toDate').value = lastDay.toISOString().split('T')[0];
         }
 
-        try {
-            // 🔥 Updated API endpoint for Report Route
-            const response = await fetch(`http://localhost:5000/api/report/daily-summary?fromDate=${fromDate}&toDate=${toDate}`);
-            
-            if (!response.ok) {
-                throw new Error("Server Response Error: " + response.statusText);
+        // Fetch Live Monthly Data from Database
+        async function fetchMonthlyData() {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            const userId = localStorage.getItem('userId'); // 🔥 LocalStorage se User ID nikaali
+
+            if (!fromDate || !toDate) {
+                alert("Dono dates select karein!");
+                return;
             }
 
-            const data = await response.json();
-            
-            // Render Live Database Data
-            renderTableAndTotals(data);
+            if (!userId) {
+                alert("User session expired! Dobara login karein.");
+                window.location.href = 'login.html';
+                return;
+            }
 
-        } catch (err) {
-            console.error("API Fetch Error:", err);
+            try {
+                // 🔥 URL ke end par `&userId=${userId}` append kar diya
+                const response = await fetch(`/api/report/daily-summary?fromDate=${fromDate}&toDate=${toDate}&userId=${userId}`);
+
+                if (!response.ok) {
+                    throw new Error("Server Response Error: " + response.statusText);
+                }
+
+                const data = await response.json();
+
+                // Render Live Database Data
+                renderTableAndTotals(data);
+
+            } catch (err) {
+                console.error("API Fetch Error:", err);
+                const tbody = document.getElementById('dailyReportBody');
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Database se live data fetch karne mein masla aaya hai. Check terminal logs!</td></tr>`;
+            }
+        }
+
+        // Render Table Rows & Compute Totals
+        function renderTableAndTotals(rows) {
             const tbody = document.getElementById('dailyReportBody');
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Database se live data fetch karne mein masla aaya hai. Check terminal logs!</td></tr>`;
-        }
-    }
+            tbody.innerHTML = '';
 
-    // Render Table Rows & Compute Totals
-    function renderTableAndTotals(rows) {
-        const tbody = document.getElementById('dailyReportBody');
-        tbody.innerHTML = '';
+            let grandCredit = 0;
+            let grandDebit = 0;
 
-        let grandCredit = 0;
-        let grandDebit = 0;
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center">Is date range mein koi daily sheet data nahi mila.</td></tr>`;
 
-        if (!rows || rows.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center">Is date range mein koi daily sheet data nahi mila.</td></tr>`;
-            
-            // Clear Stats
-            updateStatWidgets(0, 0, 0);
-            return;
-        }
+                // Clear Stats
+                updateStatWidgets(0, 0, 0);
+                return;
+            }
 
-        rows.forEach(row => {
-            const credit = Number(row.total_credit || 0);
-            const debit = Number(row.total_debit || 0);
-            const balance = credit - debit;
+            rows.forEach(row => {
+                const credit = Number(row.total_credit || 0);
+                const debit = Number(row.total_debit || 0);
+                const balance = credit - debit;
 
-            grandCredit += credit;
-            grandDebit += debit;
+                grandCredit += credit;
+                grandDebit += debit;
 
-            // Date formatting to DD/MM/YYYY
-            const formattedDate = new Date(row.report_date).toLocaleDateString('en-GB');
+                // Date formatting to DD/MM/YYYY
+                const formattedDate = new Date(row.report_date).toLocaleDateString('en-GB');
 
-            tbody.innerHTML += `
+                tbody.innerHTML += `
                 <tr>
                     <td class="text-center">${formattedDate}</td>
-                    <td class="text-right text-danger">${credit.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR</td>
-                    <td class="text-right text-success">${debit.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR</td>
-                    <td class="text-right font-weight-bold">${balance.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR</td>
+                    <td class="text-right text-danger">${credit.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR</td>
+                    <td class="text-right text-success">${debit.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR</td>
+                    <td class="text-right font-weight-bold">${balance.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR</td>
                 </tr>
             `;
-        });
+            });
 
-        const netBalance = grandCredit - grandDebit;
-        updateStatWidgets(grandCredit, grandDebit, netBalance);
-    }
+            const netBalance = grandCredit - grandDebit;
+            updateStatWidgets(grandCredit, grandDebit, netBalance);
+        }
 
-    // Helper Function to Update Top Stat Cards & Footer Totals
-    function updateStatWidgets(credit, debit, balance) {
-        // Update Stat Cards
-        document.getElementById('widgetTotalCredit').innerText = `${credit.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR`;
-        document.getElementById('widgetTotalDebit').innerText = `${debit.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR`;
-        document.getElementById('widgetNetBalance').innerText = `${balance.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR`;
+        // Helper Function to Update Top Stat Cards & Footer Totals
+        function updateStatWidgets(credit, debit, balance) {
+            // Update Stat Cards
+            document.getElementById('widgetTotalCredit').innerText = `${credit.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR`;
+            document.getElementById('widgetTotalDebit').innerText = `${debit.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR`;
+            document.getElementById('widgetNetBalance').innerText = `${balance.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR`;
 
-        // Update Footer Table Row
-        document.getElementById('footTotalCredit').innerText = `${credit.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR`;
-        document.getElementById('footTotalDebit').innerText = `${debit.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR`;
-        document.getElementById('footNetBalance').innerText = `${balance.toLocaleString('en-PK', {minimumFractionDigits: 2})} PKR`;
-    }
+            // Update Footer Table Row
+            document.getElementById('footTotalCredit').innerText = `${credit.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR`;
+            document.getElementById('footTotalDebit').innerText = `${debit.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR`;
+            document.getElementById('footNetBalance').innerText = `${balance.toLocaleString('en-PK', { minimumFractionDigits: 2 })} PKR`;
+        }
 
-    // Initialize Page
-    window.onload = () => {
-        setCurrentMonthDates();
-        fetchMonthlyData();
-    };
-</script>
+        // Initialize Page
+        window.onload = () => {
+            setCurrentMonthDates();
+            fetchMonthlyData();
+        };
+    </script>
 </body>
+
 </html>

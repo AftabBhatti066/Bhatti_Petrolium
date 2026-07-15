@@ -1,16 +1,8 @@
-const mysql = require('mysql2/promise');
+// Centralized DB config import karein taakay double pools na banein aur connections control mein rahein
+const db = require('../config/db'); 
 const bcrypt = require('bcrypt');
 
-const db = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '', 
-    database: 'bhatti_petrolium',
-    waitForConnections: true,
-    connectionLimit: 10
-});
-
-// 1. Register Function
+// 1. Register Function (With Automatic Stock Initialization for All 9 Lubricants & Fuels)
 const registerUser = async (req, res) => {
     const { fullName, username, password } = req.body;
     console.log("Register Request Received:", req.body);
@@ -20,7 +12,8 @@ const registerUser = async (req, res) => {
     }
 
     try {
-        const [existing] = await db.execute('SELECT id FROM users WHERE username = ?', [username]);
+        // Checking if user already exists
+        const [existing] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
 
         if (existing.length > 0) {
             return res.status(400).json({ status: "Error", message: "Yeh Username pehle se maujood hai!" });
@@ -28,13 +21,51 @@ const registerUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const [result] = await db.execute(
+        // User insert kiya
+        const [result] = await db.query(
             'INSERT INTO users (full_name, username, password, role) VALUES (?, ?, ?, ?)',
             [fullName, username, hashedPassword, 'Manager']
         );
 
         console.log("User Insert Result:", result);
-        return res.json({ status: "Success", message: "Manager account create ho gaya hai!" });
+        
+        // Naye user ki unique ID extract ki
+        const newUserId = result.insertId;
+
+        // 🚀 A. Automatic Fuel Stock Initialize karna (Default 0.00 stock)
+        const fuelQuery = `
+            INSERT INTO fuel_stocks (fuel_type, current_stock, user_id) 
+            VALUES 
+            ('Diesel', 0.00, ?),
+            ('Super', 0.00, ?)
+        `;
+        await db.query(fuelQuery, [newUserId, newUserId]);
+
+        // 🚀 B. Automatic Lubricant Stock Initialize karna (All 9 items)
+        const lubricantQuery = `
+            INSERT INTO lubricant_stocks (item_name, current_stock, user_id) 
+            VALUES 
+            ('T 2 20Ltrs', 0, ?),
+            ('Balize .75', 0, ?),
+            ('Balize 1Ltrs', 0, ?),
+            ('Cariant 3Ltrs', 0, ?),
+            ('Cariant 4ltrs', 0, ?),
+            ('Deo 6000 4Ltrs', 0, ?),
+            ('Deo 6000 10Ltrs', 0, ?),
+            ('Deo 8000 4Ltrs', 0, ?),
+            ('Deo 8000 10Ltrs', 0, ?)
+        `;
+        
+        // passes newUserId 9 times for the 9 placeholders (?)
+        await db.query(lubricantQuery, [
+            newUserId, newUserId, newUserId, 
+            newUserId, newUserId, newUserId, 
+            newUserId, newUserId, newUserId
+        ]);
+
+        console.log(`All 9 stocks initialized automatically for User ID: ${newUserId}`);
+
+        return res.json({ status: "Success", message: "Manager account aur default stocks create ho gaye hain!" });
     } catch (err) {
         console.error("Database Insert Error:", err);
         return res.status(500).json({ status: "Error", message: "Database Error: " + err.message });
@@ -50,7 +81,7 @@ const loginUser = async (req, res) => {
     }
 
     try {
-        const [rows] = await db.execute('SELECT * FROM users WHERE username = ?', [username]);
+        const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
 
         if (rows.length === 0) {
             return res.status(401).json({ status: "Error", message: "Ghalat Username ya Password hai!" });

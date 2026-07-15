@@ -115,8 +115,12 @@
                 return;
             }
 
-            // Fetching rate data from Backend API
-            const res = await fetch(`${API_URL}/rates`);
+            // 🔥 LocalStorage se User ID get ki
+            const userId = localStorage.getItem('userId');
+            if (!userId) return;
+
+            // Fetching rate data with userId query param
+            const res = await fetch(`${API_URL}/rates?userId=${userId}`);
             const result = await res.json();
 
             tbody.innerHTML = '';
@@ -146,9 +150,15 @@
         const rateDate = document.getElementById('rate_active_date').value;
         const productVal = document.getElementById('main_product').value.split('|');
         const rateVal = document.getElementById('rate_per_litre').value;
+        const userId = localStorage.getItem('userId'); // 🔥 User ID extract ki
 
         if (!rateDate || !rateVal) {
             alert("Aap ne Date ya Rate ki value enter nahi ki!");
+            return;
+        }
+
+        if (!userId) {
+            alert("User Session expired! Pehle login karein.");
             return;
         }
 
@@ -157,7 +167,8 @@
             product_name: productVal[0],
             product_type: productVal[1],
             specific_category: productVal[2],
-            rate_per_litre: parseFloat(rateVal)
+            rate_per_litre: parseFloat(rateVal),
+            userId: userId // 🔥 Payload mein merge kar dia
         };
 
         try {
@@ -184,7 +195,8 @@
     async function deletePriceLog(id) {
         if (confirm("Kya aap is rate log history entry ko delete karna chahte hain?")) {
             try {
-                const res = await fetch(`${API_URL}/delete/${id}`, { method: 'DELETE' });
+                const userId = localStorage.getItem('userId'); // 🔥 Security verification
+                const res = await fetch(`${API_URL}/delete/${id}?userId=${userId}`, { method: 'DELETE' });
                 const result = await res.json();
                 if (result.status === "Success") {
                     await loadPriceHistory();

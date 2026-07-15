@@ -342,7 +342,15 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('entry_date').value = today;
 
-            // Load All Ledgers Initially
+            // 🔥 LocalStorage se User ID nikaali
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                alert("User session expired! Pehle login karein.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Load All Ledgers Initially (Passing userId)
             fetchLedgerHistory('ALL');
 
             // 1. Live Search Input Event
@@ -363,7 +371,8 @@
                     gari_number: gariNo,
                     owner_name: ownerName,
                     contact_number: document.getElementById('reg_contact_number').value,
-                    address: document.getElementById('reg_address').value
+                    address: document.getElementById('reg_address').value,
+                    userId: userId // 🔥 Payload mein userId add ki (POST request ke liye)
                 };
 
                 try {
@@ -412,7 +421,8 @@
                     driver_name: document.getElementById('driver_name').value,
                     product: document.getElementById('product_type').value,
                     litres: parseFloat(document.getElementById('litres').value),
-                    entry_date: document.getElementById('entry_date').value
+                    entry_date: document.getElementById('entry_date').value,
+                    userId: userId // 🔥 Payload mein userId add ki (POST request ke liye)
                 };
 
                 try {
@@ -442,7 +452,10 @@
         // Fetch Function (Global scope so delete can access it)
         async function fetchLedgerHistory(gariQuery = 'ALL') {
             try {
-                const response = await fetch(`${API_BASE_URL}/report/${encodeURIComponent(gariQuery)}`);
+                const userId = localStorage.getItem('userId'); // 🔥 Fetch ke liye token se userId nikaali
+                
+                // Route update ki query parameter ke sath `?userId=${userId}`
+                const response = await fetch(`${API_BASE_URL}/report/${encodeURIComponent(gariQuery)}?userId=${userId}`);
                 const data = await response.json();
 
                 if (response.ok) {
@@ -492,7 +505,10 @@
             if (!confirm('Kya aap yeh entry delete karna chahte hain?')) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/delete/${id}`, { method: 'DELETE' });
+                const userId = localStorage.getItem('userId'); // 🔥 Security filter pass karne ke liye
+                
+                // End point par query parameter attach kar diya
+                const response = await fetch(`${API_BASE_URL}/delete/${id}?userId=${userId}`, { method: 'DELETE' });
                 const data = await response.json();
 
                 if (response.ok) {
@@ -504,7 +520,7 @@
                 alert('Server Error: ' + err.message);
             }
         }
-    </script>
+</script>
 </body>
 
 </html>

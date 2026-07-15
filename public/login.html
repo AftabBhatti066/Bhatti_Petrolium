@@ -171,7 +171,7 @@
         </div>
     </div>
 
-    <script>
+  <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -180,8 +180,8 @@
         const errorAlert = document.getElementById('errorAlert');
 
         try {
-            // Updated Port to 5000
-            const response = await fetch('http://localhost:5000/api/login', {
+            // 🔥 FIXED: Absolute URL (localhost) ki jagah relative URL use kiya taakay Railway par b chalay
+            const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -190,6 +190,10 @@
             const data = await response.json();
 
             if (response.ok && data.status === "Success") {
+                // 🔥 FIXED: User ID ko browser ke localStorage mein save kar liya
+                localStorage.setItem('userId', data.user.id);
+                localStorage.setItem('username', data.user.name); // Optional: name b save krlety hain dashboard pr dikhany k liye
+                
                 window.location.href = 'dashboard.html'; 
             } else {
                 errorAlert.innerText = data.message || "Invalid credentials!";

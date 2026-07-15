@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        
+
     </style>
 </head>
+
 <body>
 
     <div class="window-title">
@@ -23,7 +25,7 @@
         <a href="daily-sheet.html" class="tab-item">📝 Daily Sheet</a>
         <a href="ledgers.html" class="tab-item">📒 Ledgers</a>
         <a href="pricing.html" class="tab-item">🏷️ Pricing</a>
-        
+
         <div class="date-wrap">
             <span>Date: </span>
             <input type="date" id="dashDate">
@@ -50,7 +52,7 @@
     </div>
 
     <div class="main-grid">
-        
+
         <div class="panel">
             <div class="panel-title">⛽ Fuel Tank Stock Levels & Dispensed Liters</div>
             <table class="data-table">
@@ -63,7 +65,9 @@
                     </tr>
                 </thead>
                 <tbody id="fuelStockBody">
-                    <tr><td colspan="3">Fetching live stock readings...</td></tr>
+                    <tr>
+                        <td colspan="3">Fetching live stock readings...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -86,133 +90,148 @@
                     </tr>
                 </thead>
                 <tbody id="lubricantAlertBody">
-                    <tr><td colspan="3">Stock levels are clear.</td></tr>
+                    <tr>
+                        <td colspan="3">Stock levels are clear.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
     </div>
 
-    <script>
-        let fuelChart = null;
+   <script>
+    let fuelChart = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().toISOString().split('T')[0];
-            const dateInput = document.getElementById('dashDate');
-            dateInput.value = today;
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('dashDate');
+        dateInput.value = today;
 
-            fetchDashboardStats(today);
+        fetchDashboardStats(today);
 
-            dateInput.addEventListener('change', (e) => {
-                fetchDashboardStats(e.target.value);
-            });
+        dateInput.addEventListener('change', (e) => {
+            fetchDashboardStats(e.target.value);
         });
-
-        async function fetchDashboardStats(selectedDate) {
-            try {
-                const response = await fetch(`/api/dashboard/data?date=${selectedDate}`);
-                const data = await response.json();
-
-                if (response.ok && data.status === "Success") {
-                    // Update KPI Cards
-                    document.getElementById('kpiUdhaar').innerText = `${data.financials.today_udhaar.toLocaleString()} PKR`;
-                    document.getElementById('kpiVasooli').innerText = `${data.financials.today_vasooli.toLocaleString()} PKR`;
-                    document.getElementById('kpiLedger').innerText = `${data.financials.today_credit_ledger_pkr.toLocaleString()} PKR`;
-                    document.getElementById('kpiCustomers').innerText = data.financials.total_customers;
-
-                    // Render Fuel Stock Table
-                    renderFuelStockTable(data.stocks, data.dispensed_fuel);
-
-                    // Render Low Lubricants Alert
-                    renderLubricantAlerts(data.low_lubricants);
-
-                    // Render Chart
-                    renderFuelChart(data.dispensed_fuel);
-                }
-            } catch (err) {
-                console.error("Dashboard Sync Error:", err);
-            }
-        }
-
-        function renderFuelStockTable(stocks, dispensed) {
-    const tbody = document.getElementById('fuelStockBody');
-    tbody.innerHTML = '';
-
-    if (!stocks || stocks.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No fuel stock configured in system.</td></tr>';
-        return;
-    }
-
-    // Threshold set karein (e.g., 1000 Liters se kam par low stock warning)
-    const LOW_STOCK_THRESHOLD = 1000; 
-
-    stocks.forEach(item => {
-        const tr = document.createElement('tr');
-        const currentStock = parseFloat(item.current_stock || 0);
-        const dispensedQty = dispensed[item.fuel_type.toLowerCase()] || 0;
-        
-        // Check if stock is low
-        const isLow = currentStock <= LOW_STOCK_THRESHOLD;
-
-        tr.innerHTML = `
-            <td><strong>${item.fuel_type}</strong></td>
-            <td style="font-weight:bold; color:${isLow ? '#c0392b' : '#1a2a6c'};">
-                ${currentStock.toLocaleString()} Ltr
-            </td>
-            <td style="color:#27ae60; font-weight:bold;">${dispensedQty.toLocaleString()} Ltr</td>
-            <td>
-                ${isLow 
-                    ? '<span class="badge-low" style="background-color:#fce4e4; color:#c0392b; padding:2px 6px; border-radius:3px; font-weight:bold;">⚠️ Low Stock</span>' 
-                    : '<span class="badge-good" style="background-color:#e8f8f5; color:#27ae60; padding:2px 6px; border-radius:3px; font-weight:bold;">Sufficient</span>'
-                }
-            </td>
-        `;
-        tbody.appendChild(tr);
     });
-}
-        function renderLubricantAlerts(lowItems) {
-            const tbody = document.getElementById('lubricantAlertBody');
-            tbody.innerHTML = '';
 
-            if (!lowItems || lowItems.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="color:#27ae60; font-weight:bold;">All Lubricants stock levels are sufficient.</td></tr>';
+    async function fetchDashboardStats(selectedDate) {
+        try {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                window.location.href = '/login.html';
                 return;
             }
 
-            lowItems.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${item.item_name}</strong></td>
-                    <td style="font-weight:bold; color:#c0392b;">${item.current_stock} Qty</td>
-                    <td><span class="badge-low">Low Stock Warning</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
+            const response = await fetch(`/api/dashboard/data?date=${selectedDate}&userId=${userId}`);
+            const data = await response.json();
+
+            if (response.ok && data.status === "Success") {
+                // Update KPI Cards
+                document.getElementById('kpiUdhaar').innerText = `${data.financials.today_udhaar.toLocaleString()} PKR`;
+                document.getElementById('kpiVasooli').innerText = `${data.financials.today_vasooli.toLocaleString()} PKR`;
+                document.getElementById('kpiLedger').innerText = `${data.financials.today_credit_ledger_pkr.toLocaleString()} PKR`;
+                document.getElementById('kpiCustomers').innerText = data.financials.total_customers;
+
+                // Render Fuel Stock Table
+                renderFuelStockTable(data.stocks, data.dispensed_fuel);
+
+                // Render Low Lubricants Alert
+                renderLubricantAlerts(data.low_lubricants);
+
+                // Render Chart
+                renderFuelChart(data.dispensed_fuel);
+            }
+        } catch (err) {
+            console.error("Dashboard Sync Error:", err);
+        }
+    }
+
+    function renderFuelStockTable(stocks, dispensed) {
+        const tbody = document.getElementById('fuelStockBody');
+        tbody.innerHTML = ''; // Safely clears out existing entries
+
+        if (!stocks || stocks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No fuel stock configured in system.</td></tr>';
+            return;
         }
 
-        function renderFuelChart(dispensed) {
-            const ctx = document.getElementById('fuelDispensedChart').getContext('2d');
+        const LOW_STOCK_THRESHOLD = 1000;
+
+        stocks.forEach(item => {
+            const tr = document.createElement('tr');
+            const currentStock = parseFloat(item.current_stock || 0);
             
-            if (fuelChart) fuelChart.destroy();
+            // 💡 CASE-SENSITIVITY FIX: Fallback handle karne ke liye lowerCase aur direct checking dono laga di hain
+            const typeKey = item.fuel_type.toLowerCase().trim();
+            const dispensedQty = dispensed[typeKey] || dispensed[item.fuel_type] || 0;
 
-            fuelChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Diesel / HSD', 'Petrol / Super'],
-                    datasets: [{
-                        label: 'Liters Dispensed Today',
-                        data: [dispensed.diesel || 0, dispensed.petrol || 0],
-                        backgroundColor: ['#2980b9', '#e67e22'],
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
+            const isLow = currentStock <= LOW_STOCK_THRESHOLD;
+
+            tr.innerHTML = `
+                <td><strong>${item.fuel_type}</strong></td>
+                <td style="font-weight:bold; color:${isLow ? '#c0392b' : '#1a2a6c'};">
+                    ${currentStock.toLocaleString()} Ltr
+                </td>
+                <td style="color:#27ae60; font-weight:bold;">${dispensedQty.toLocaleString()} Ltr</td>
+                <td>
+                    ${isLow
+                        ? '<span class="badge-low" style="background-color:#fce4e4; color:#c0392b; padding:2px 6px; border-radius:3px; font-weight:bold;">⚠️ Low Stock</span>'
+                        : '<span class="badge-good" style="background-color:#e8f8f5; color:#27ae60; padding:2px 6px; border-radius:3px; font-weight:bold;">Sufficient</span>'
+                    }
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderLubricantAlerts(lowItems) {
+        const tbody = document.getElementById('lubricantAlertBody');
+        tbody.innerHTML = ''; // Clear table body to prevent duplicates
+
+        if (!lowItems || lowItems.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#27ae60; font-weight:bold; text-align:center;">All Lubricants stock levels are sufficient.</td></tr>';
+            return;
         }
-    </script>
+
+        lowItems.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${item.item_name}</strong></td>
+                <td style="font-weight:bold; color:#c0392b;">${item.current_stock} Qty</td>
+                <td><span class="badge-low" style="background-color:#fce4e4; color:#c0392b; padding:2px 6px; border-radius:3px; font-weight:bold;">Low Stock Warning</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderFuelChart(dispensed) {
+        const ctx = document.getElementById('fuelDispensedChart').getContext('2d');
+
+        if (fuelChart) fuelChart.destroy();
+
+        // 💡 CHART DATA INTEGRATION: Dono formats ('super' aur 'petrol') ko check karein taakay frontend par blank chart na aaye
+        const dieselData = dispensed.diesel || dispensed.Diesel || 0;
+        const petrolData = dispensed.petrol || dispensed.super || dispensed.Super || 0;
+
+        fuelChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Diesel / HSD', 'Petrol / Super'],
+                datasets: [{
+                    label: 'Liters Dispensed Today',
+                    data: [dieselData, petrolData],
+                    backgroundColor: ['#2980b9', '#e67e22'],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+</script>
 </body>
+
 </html>

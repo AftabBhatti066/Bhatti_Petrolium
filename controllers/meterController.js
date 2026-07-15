@@ -1,145 +1,206 @@
 const db = require('../config/db');
 
-exports.addReading = async (req, res) => {
-    let connection;
-    try {
-        connection = await db.getConnection();
-        await connection.beginTransaction();
+// Default Lubricants aur Fuels ki list taakay automatic system crash recovery ho sakay
+const DEFAULT_LUBRICANTS = [
+    'T 2 20Ltrs', 'Balize .75', 'Balize 1Ltrs', 'Cariant 3Ltrs',
+    'Cariant 4ltrs', 'Deo 6000 4Ltrs', 'Deo 6000 10Ltrs',
+    'Deo 8000 4Ltrs', 'Deo 8000 10Ltrs'
+];
 
-        const { nozzle_name, fuel_type, closing_reading, reading_date } = req.body;
-
-        // 1. Pehle nozzle ki purani reading lein
-        const [lastReading] = await connection.query(
-            'SELECT closing_reading FROM meter_readings WHERE TRIM(LOWER(nozzle_name)) = TRIM(LOWER(?)) ORDER BY id DESC LIMIT 1',
-            [nozzle_name]
-        );
-        
-        let opening_reading = 0;
-        if (lastReading.length > 0) {
-            opening_reading = parseFloat(lastReading[0].closing_reading);
-        }
-
-        const liters_sold = parseFloat(closing_reading) - opening_reading;
-
-        if (liters_sold < 0) {
-            await connection.rollback();
-            return res.status(400).json({
-                status: "Error",
-                message: `Closing reading (${closing_reading}) cannot be less than opening reading (${opening_reading})`
-            });
-        }
-
-        // 2. Meter reading records update
-        const insertQuery = `INSERT INTO meter_readings (nozzle_name, fuel_type, opening_reading, closing_reading, liters_sold, reading_date) 
-                             VALUES (?, ?, ?, ?, ?, ?)`;
-        await connection.query(insertQuery, [nozzle_name, fuel_type, opening_reading, closing_reading, liters_sold, reading_date]);
-
-        // 3. Stock Update with Row Level Lock (Case-Insensitive match)
-        const [stockRow] = await connection.query(
-            `SELECT current_stock FROM fuel_stocks WHERE TRIM(LOWER(fuel_type)) = TRIM(LOWER(?)) FOR UPDATE`,
-            [fuel_type]
-        );
-
-        if (stockRow.length > 0) {
-            const updateStockQuery = `UPDATE fuel_stocks SET current_stock = current_stock - ? WHERE TRIM(LOWER(fuel_type)) = TRIM(LOWER(?))`;
-            await connection.query(updateStockQuery, [liters_sold, fuel_type]);
-        }
-
-        await connection.commit();
-        res.json({
-            status: "Success",
-            message: "Reading saved and stock deducted successfully!",
-            data: { nozzle: nozzle_name, sold_liters: liters_sold }
-        });
-
-    } catch (error) {
-        if (connection) await connection.rollback();
-        console.error("Backend Error:", error);
-        res.status(500).json({ status: "Error", message: "Database level error", db_error: error.message });
-    } finally {
-        if (connection) connection.release(); // Connection leak protection lock
-    }
-};
-
-exports.getTankStock = async (req, res) => {
-    try {
-        const [rows] = await db.query('SELECT fuel_type, current_stock FROM fuel_stocks');
-        console.log("Terminal Debug DB Stock Data:", rows);
-        res.json({ status: "Success", data: rows });
-    } catch (error) {
-        console.error("Stock fetch error:", error);
-        res.status(500).json({ status: "Error", db_error: error.message });
-    }
-};
-
+// ==========================================
+// 1. GET ALL LATEST NOZZLE READINGS (Filtered by user_id)
+// ==========================================
 exports.getAllReadings = async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM meter_readings ORDER BY id DESC');
+        const userId = req.query.userId;
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID missing!" });
+        }
+
+        const query = `
+            SELECT m1.* FROM meter_readings m1
+            INNER JOIN (
+                SELECT nozzle_name, MAX(id) as max_id 
+                FROM meter_readings 
+                WHERE user_id = ? 
+                GROUP BY nozzle_name
+            ) m2 ON m1.id = m2.max_id
+            WHERE m1.user_id = ?
+        `;
+
+        const [rows] = await db.query(query, [userId, userId]);
         res.json({ status: "Success", data: rows });
     } catch (error) {
-        res.status(500).json({ status: "Error", db_error: error.message });
+        console.error("Get All Readings Error:", error);
+        res.status(500).json({ status: "Error", message: error.message });
     }
 };
 
-exports.updateStockReceipt = async (req, res) => {
+// ==========================================
+// 2. GET FUEL TANK STOCK (Filtered by user_id + Auto-Initialization)
+// ==========================================
+exports.getTankStock = async (req, res) => {
     try {
-        const { fuel_type, receipt_liters } = req.body;
-        const query = `UPDATE fuel_stocks SET current_stock = current_stock + ? WHERE TRIM(LOWER(fuel_type)) = TRIM(LOWER(?))`;
-        await db.query(query, [receipt_liters, fuel_type]);
-        res.json({ status: "Success", message: "Stock receipt added successfully!" });
+        const userId = req.query.userId;
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID missing!" });
+        }
+
+        let [rows] = await db.query('SELECT fuel_type, current_stock FROM fuel_stocks WHERE user_id = ?', [userId]);
+
+        // 💡 CRASH RECOVERY: Agar naye user ka fuel stock entry nahi hai, toh runtime par create karein
+        if (rows.length === 0) {
+            await db.query('INSERT IGNORE INTO fuel_stocks (fuel_type, current_stock, user_id) VALUES (?, 0.00, ?), (?, 0.00, ?)', 
+                ['Diesel', userId, 'Super', userId]
+            );
+            // Dobara fetch karein taakay frontend khali na jaye
+            const [retryRows] = await db.query('SELECT fuel_type, current_stock FROM fuel_stocks WHERE user_id = ?', [userId]);
+            rows = retryRows;
+        }
+
+        res.json({ status: "Success", data: rows });
     } catch (error) {
-        res.status(500).json({ status: "Error", db_error: error.message });
+        console.error("Get Tank Stock Error:", error);
+        res.status(500).json({ status: "Error", message: error.message });
     }
 };
 
-
-// Lubricant Stock fetch karne k liye
+// ==========================================
+// 3. GET LUBRICANT STOCK (Filtered by user_id + Auto-Initialization)
+// ==========================================
 exports.getLubricantStock = async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT item_name, current_stock FROM lubricant_stocks ORDER BY id ASC');
+        const userId = req.query.userId;
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID missing!" });
+        }
+
+        let [rows] = await db.query('SELECT item_name, current_stock FROM lubricant_stocks WHERE user_id = ?', [userId]);
+        
+        // 💡 CRASH RECOVERY: Agar bilkul naya user hai aur lubricants khali hain, toh automatic 9 rows bana dein
+        if (rows.length === 0) {
+            for (const item of DEFAULT_LUBRICANTS) {
+                await db.query('INSERT IGNORE INTO lubricant_stocks (item_name, current_stock, user_id) VALUES (?, 0, ?)', [item, userId]);
+            }
+            // Populate rows array again after generation
+            const [retryRows] = await db.query('SELECT item_name, current_stock FROM lubricant_stocks WHERE user_id = ?', [userId]);
+            rows = retryRows;
+        }
+
         res.json({ status: "Success", data: rows });
     } catch (error) {
-        res.status(500).json({ status: "Error", db_error: error.message });
+        console.error("Get Lubricant Stock Error:", error);
+        res.status(500).json({ status: "Error", message: error.message });
     }
 };
 
-// Lubricants Shift closing data batch update karne k liye (Transaction Safe)
-exports.saveLubricantTransactions = async (req, res) => {
-    let connection;
+// ==========================================
+// 4. ADD NEW METER READING (Safe Insert & Deduct)
+// ==========================================
+exports.addReading = async (req, res) => {
     try {
-        connection = await db.getConnection();
-        await connection.beginTransaction();
+        const { nozzle_name, fuel_type, closing_reading, reading_date, userId } = req.body;
 
-        const { lubricant_sales, lubricant_receipts } = req.body;
-
-        // 1. Sales process karen (Minus from stock)
-        for (const item of lubricant_sales) {
-            if (item.qty > 0) {
-                await connection.query(
-                    `UPDATE lubricant_stocks SET current_stock = current_stock - ? WHERE item_name = ?`,
-                    [item.qty, item.name]
-                );
-            }
+        if (!nozzle_name || closing_reading === undefined || !reading_date || !userId) {
+            return res.status(400).json({ status: "Error", message: "Missing required fields!" });
         }
 
-        // 2. Receipts process karen (Plus into stock)
-        for (const item of lubricant_receipts) {
-            if (item.qty > 0) {
-                await connection.query(
-                    `UPDATE lubricant_stocks SET current_stock = current_stock + ? WHERE item_name = ?`,
-                    [item.qty, item.name]
-                );
-            }
-        }
+        // 1. Pehle is nozzle ki purani closing reading nikaalwain
+        const [lastReading] = await db.query(
+            'SELECT closing_reading FROM meter_readings WHERE nozzle_name = ? AND user_id = ? ORDER BY id DESC LIMIT 1',
+            [nozzle_name, userId]
+        );
 
-        await connection.commit();
-        res.json({ status: "Success", message: "Lubricant inventory updated successfully!" });
+        const opening_reading = lastReading.length > 0 ? parseFloat(lastReading[0].closing_reading) : 0.00;
+        const liters_sold = Math.max(0, parseFloat(closing_reading) - opening_reading);
 
+        // 2. Insert new reading record
+        const insertQuery = `
+            INSERT INTO meter_readings (nozzle_name, fuel_type, opening_reading, closing_reading, liters_sold, reading_date, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+        await db.query(insertQuery, [nozzle_name, fuel_type, opening_reading, closing_reading, liters_sold, reading_date, userId]);
+
+        // 3. Fuel Tank Stock safe check update (Pehle ensure karein row exist karti ho)
+        await db.query('INSERT IGNORE INTO fuel_stocks (fuel_type, current_stock, user_id) VALUES (?, 0.00, ?)', [fuel_type, userId]);
+        await db.query(
+            'UPDATE fuel_stocks SET current_stock = current_stock - ? WHERE LOWER(TRIM(fuel_type)) = LOWER(TRIM(?)) AND user_id = ?',
+            [liters_sold, fuel_type, userId]
+        );
+
+        res.json({ status: "Success", message: "Reading logged and stock updated successfully!" });
     } catch (error) {
-        if (connection) await connection.rollback();
-        console.error("Lubricant Sync Error:", error);
-        res.status(500).json({ status: "Error", db_error: error.message });
-    } finally {
-        if (connection) connection.release();
+        console.error("Add Reading Error:", error);
+        res.status(500).json({ status: "Error", message: error.message });
+    }
+};
+
+// ==========================================
+// 5. UPDATE TANK RECEIPTS (POST)
+// ==========================================
+exports.updateReceipt = async (req, res) => {
+    try {
+        const { fuel_type, receipt_liters, userId } = req.body;
+
+        if (!fuel_type || !receipt_liters || !userId) {
+            return res.status(400).json({ status: "Error", message: "Missing receipt parameters!" });
+        }
+
+        // Ensure target row exists before update trigger
+        await db.query('INSERT IGNORE INTO fuel_stocks (fuel_type, current_stock, user_id) VALUES (?, 0.00, ?)', [fuel_type, userId]);
+
+        const query = 'UPDATE fuel_stocks SET current_stock = current_stock + ? WHERE LOWER(TRIM(fuel_type)) = LOWER(TRIM(?)) AND user_id = ?';
+        await db.query(query, [parseFloat(receipt_liters), fuel_type, userId]);
+
+        res.json({ status: "Success", message: "Tank stock added successfully!" });
+    } catch (error) {
+        console.error("Update Receipt Error:", error);
+        res.status(500).json({ status: "Error", message: error.message });
+    }
+};
+
+// ==========================================
+// 6. BATCH UPDATE LUBRICANTS (POST)
+// ==========================================
+exports.updateLubricants = async (req, res) => {
+    try {
+        const { lubricant_sales, lubricant_receipts, userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ status: "Error", message: "User ID missing!" });
+        }
+
+        // Process Receipts (Stock Add)
+        if (lubricant_receipts && lubricant_receipts.length > 0) {
+            for (const item of lubricant_receipts) {
+                if (item.qty > 0) {
+                    // Safe check: Ensure product exists for user
+                    await db.query('INSERT IGNORE INTO lubricant_stocks (item_name, current_stock, user_id) VALUES (?, 0, ?)', [item.name, userId]);
+                    await db.query(
+                        'UPDATE lubricant_stocks SET current_stock = current_stock + ? WHERE item_name = ? AND user_id = ?',
+                        [parseInt(item.qty), item.name, userId]
+                    );
+                }
+            }
+        }
+
+        // Process Sales (Stock Deduct)
+        if (lubricant_sales && lubricant_sales.length > 0) {
+            for (const item of lubricant_sales) {
+                if (item.qty > 0) {
+                    // Safe check: Ensure product exists for user
+                    await db.query('INSERT IGNORE INTO lubricant_stocks (item_name, current_stock, user_id) VALUES (?, 0, ?)', [item.name, userId]);
+                    await db.query(
+                        'UPDATE lubricant_stocks SET current_stock = current_stock - ? WHERE item_name = ? AND user_id = ?',
+                        [parseInt(item.qty), item.name, userId]
+                    );
+                }
+            }
+        }
+
+        res.json({ status: "Success", message: "Lubricant stock synced successfully!" });
+    } catch (error) {
+        console.error("Update Lubricants Error:", error);
+        res.status(500).json({ status: "Error", message: error.message });
     }
 };
